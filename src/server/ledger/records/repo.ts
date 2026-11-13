@@ -32,7 +32,7 @@ export function list(
   limit: number,
 ) {
   const orders = {
-    newest: [desc(entries.occurredOn), desc(entries.id)],
+    newest: [sql`${entries}.rowid DESC`],
     oldest: [asc(entries.occurredOn), asc(entries.id)],
     amount_desc: [desc(entries.amountMinor), desc(entries.occurredOn), desc(entries.id)],
     amount_asc: [asc(entries.amountMinor), asc(entries.occurredOn), asc(entries.id)],

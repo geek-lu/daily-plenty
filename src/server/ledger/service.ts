@@ -85,7 +85,7 @@ export function query(store: Store, actorId: string, ledgerId: string, raw: unkn
   const access = authorize(store, actorId, ledgerId);
   const filters = filterInput.parse(raw);
   ensure(
-    !filters.cursor || /^20\d{2}-\d{2}-\d{2}_[a-f0-9-]{36}$/.test(filters.cursor),
+    !filters.cursor || /^\d+$/.test(filters.cursor),
     400,
     '分页标识无效',
   );
@@ -105,7 +105,7 @@ export function query(store: Store, actorId: string, ledgerId: string, raw: unkn
     categories: repo.categoryList(store, ledgerId),
     templates: repo.templateList(store, ledgerId, actorId),
     summary,
-    nextCursor: rows.length > 50 && last ? `${last.occurredOn}_${last.id}` : null,
+    nextCursor: rows.length > 50 && last ? `${last.rowid}` : null,
   };
 }
 export function queryReport(
@@ -156,7 +156,7 @@ export function exportCsv(store: Store, actorId: string, ledgerId: string, raw: 
       lines.push(entryCsvRow(entry));
     }
     const last = batch.at(-1);
-    cursor = batch.length === 500 && last ? `${last.occurredOn}_${last.id}` : undefined;
+    cursor = batch.length === 500 && last ? `${last.rowid}` : undefined;
   } while (cursor);
   return '\uFEFF' + lines.join('\r\n');
 }

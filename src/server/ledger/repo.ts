@@ -1,6 +1,6 @@
 /** [INPUT]: Store、Drizzle 表、已校验的过滤器。[OUTPUT]: 同账本查询写入、区间汇总、日/月/年分组及用户模板存取。[POS]: ledger 数据仓储。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
-import { and, desc, eq, getTableColumns, gte, isNull, lt, lte, or, sql } from 'drizzle-orm';
+import { and, desc, eq, getTableColumns, gte, isNull, lt, lte, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/sqlite-core';
 import type { Store } from '../db/client';
 import {
@@ -117,6 +117,7 @@ export function entryQuery(store: Store) {
   return store.db
     .select({
       ...getTableColumns(entries),
+      rowid: sql<number>`${entries}.rowid`,
       categoryName: categories.name,
       categoryIcon: categories.icon,
       payerName: payer.displayName,
@@ -155,8 +156,7 @@ export function listEntries(
   cursor?: string,
   limit = 51,
 ) {
-  const date = cursor?.slice(0, 10);
-  const id = cursor?.slice(11);
+  const cursorRowid = cursor ? Number(cursor) : undefined;
   return entryQuery(store)
     .where(
       and(
@@ -166,12 +166,12 @@ export function listEntries(
         filters.search
           ? sql`instr(lower(${entries.note} || ' ' || ${categories.name}), lower(${filters.search})) > 0`
           : undefined,
-        date && id
-          ? or(lt(entries.occurredOn, date), and(eq(entries.occurredOn, date), lt(entries.id, id)))
+        cursorRowid !== undefined
+          ? sql`${entries}.rowid < ${cursorRowid}`
           : undefined,
       ),
     )
-    .orderBy(desc(entries.occurredOn), desc(entries.id))
+    .orderBy(sql`${entries}.rowid DESC`)
     .limit(limit)
     .all();
 }

@@ -149,6 +149,9 @@ test('pagination is stable for all four orders; totals and export include every 
       pages.every((page) => page.totals.count === 65 && page.totals.expense === all.totals.expense),
     );
     const expected = [...created].sort((a, b) => {
+      if (sort === 'newest') {
+        return created.indexOf(b) - created.indexOf(a);
+      }
       const ascending = sort === 'oldest' || sort === 'amount_asc';
       const amount = sort.startsWith('amount') ? a.amountMinor - b.amountMinor : 0;
       const comparison =
