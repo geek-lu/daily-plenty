@@ -12,3 +12,6 @@ coverage/
 
 # 本地代码索引
 .codegraph/
+
+# 本机部署目标（服务器 IP 等），不上传
+deploy.local.mk

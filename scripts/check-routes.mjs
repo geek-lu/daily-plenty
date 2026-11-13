@@ -103,6 +103,7 @@ try {
   }
   await request('GET', 'setup/status', 200);
   await request('GET', 'users/me', 401);
+  await request('GET', '/config', 404);
   const owner = await request('POST', 'setup', 200, {
     loginName: 'owner',
     password: '123456',
@@ -111,6 +112,8 @@ try {
   });
   const cookie = owner.cookie;
   assert.ok(cookie);
+  const config = await request('GET', '/config?table=users', 200, undefined, cookie);
+  assert.ok(config.data.includes('••••••') && !config.data.includes('scrypt$'));
   const ledgerId = owner.data.ledgerId;
   const base = `ledgers/${ledgerId}`;
   const current = await request('GET', 'users/me', 200, undefined, cookie);

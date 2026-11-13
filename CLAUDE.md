@@ -19,7 +19,7 @@ daily-plenty/
 └── docs/             DESIGN、REFACTOR、HISTORY 与离线 HTML 评审
 ```
 
-关键配置：package.json 定义命令与固定依赖；pnpm-lock.yaml 锁定版本；pnpm-workspace.yaml 许可 SQLite 原生构建；next.config.ts 分离开发/生产输出；tsconfig.json 开启严格类型与未使用声明检查；.prettierrc.json/.prettierignore 管理维护文件格式，排除生成物和 SQL 迁移。
+关键配置：deploy.local.mk（本机私有、gitignore）保存服务器 IP/SSH 参数，deploy.local.mk.example 为模板；package.json 定义命令与固定依赖；pnpm-lock.yaml 锁定版本；pnpm-workspace.yaml 许可 SQLite 原生构建；next.config.ts 分离开发/生产输出；tsconfig.json 开启严格类型与未使用声明检查；.prettierrc.json/.prettierignore 管理维护文件格式，排除生成物和 SQL 迁移。
 
 ## 边界
 
@@ -74,5 +74,7 @@ PC/手机分端：features 拆为 common/pc/m；PC 侧边栏、明细常驻筛�
 2026-11-13 账单评论：common/comments 在两端首页与明细详情共用；主评论下一级平铺回复，保留直接回复对象，可持续交流。新增 0007 entry_comments 表，沿用账本权限与幂等请求；部署通过现有增量迁移升级，不修改历史 SQL。46 项应用测试、9 项脚本测试、类型/架构/格式、生产构建和路由检查通过；Chrome 1440px/390px 实际发布评论并连续回复成功。make deploy/update 打包均包含 0007；未执行远端部署。
 
 2026-11-13 列表交互：PC 首页/明细移除 EntryTable，PC 与手机复用 EntryRow；每项右侧评论按钮在下方展开评论和持续回复，编辑抽屉不再承载评论。PC 维持内部滚动与无限加载。
+
+2026-11-13 部署地址本地化：服务器公网 IP 从 Makefile/remote.sh/文档移出，改由根目录 deploy.local.mk（gitignore、不进源码包）提供；未配置 SSH_HOST 时拒绝连接。测试/文档使用 RFC 5737 地址 203.0.113.10 或 <服务器IP> 占位。
 
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md

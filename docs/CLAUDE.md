@@ -14,6 +14,7 @@
 - review/styles.css：原型离线视觉样式。
 - review/prototype.js：原型内存交互和回归验证入口。
 - review/RESEARCH.md：竞品参考限制与快速录入取舍。
+- screenshots/：根 README 引用的截图位，README.md 列出文件名、内容与建议尺寸。
 
 正式页面和服务端代码位于 src/；评审稿不参与 Next.js 构建。
 DESIGN.md 包含统一动效令牌、Presence/Collapse 与浏览器适配边界；architecture.html 同步 ui 公共组件层。

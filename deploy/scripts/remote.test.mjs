@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 真实 Makefile/remote.sh、临时目录与模拟 SSH/scp/系统命令。
- * [OUTPUT]: 部署顺序、参数引用、评论迁移打包、打包排除和失败中止回归。
+ * [OUTPUT]: 部署顺序、未配置主机拦截、参数引用、评论迁移打包、打包排除和失败中止回归。
  * [POS]: 本机执行真实打包/解压，不连接服务器，不执行 bootstrap/release 的系统操作。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
@@ -81,6 +81,7 @@ function fixture(t, extra = {}) {
     PATH: `${bin}:${process.env.PATH}`,
     REMOTE_TEST_LOG: log,
     REMOTE_TEST_PACKAGE: archive,
+    DEPLOY_CONFIG: join(directory, 'absent.mk'),
     SSH_HOST: 'fixture.invalid',
     SSH_USER: 'root',
     SSH_PORT: '22',
@@ -204,6 +205,17 @@ test('tunnel is loopback-only with fail-fast forwarding; invalid ports never con
   assert.notEqual(bad.run('deploy', 'ACCESS_MODE=invalid').status, 0);
   assert.equal(
     bad.records().some((item) => item.command === 'ssh'),
+    false,
+  );
+});
+
+test('missing SSH_HOST stops before any connection', (t) => {
+  const state = fixture(t, { SSH_HOST: '' });
+  const result = state.run('status');
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /未配置 SSH_HOST/);
+  assert.equal(
+    state.records().some((item) => item.command === 'ssh' || item.command === 'scp'),
     false,
   );
 });

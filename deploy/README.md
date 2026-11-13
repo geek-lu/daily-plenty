@@ -1,10 +1,17 @@
 # 日日有余 · 阿里云 ECS 部署
 
-已按你的服务器准备：北京区、`203.0.113.10`、Alibaba Cloud Linux 3.2104 LTS 64 位、2 vCPU / 2 GiB、40 GiB 系统盘、3 Mbps 带宽。按你的选择，当前采用 **公网 IP + HTTP**，无需域名、Caddy、Docker、RDS 或证书。
+已按你的服务器准备：北京区、`<服务器IP>`、Alibaba Cloud Linux 3.2104 LTS 64 位、2 vCPU / 2 GiB、40 GiB 系统盘、3 Mbps 带宽。按你的选择，当前采用 **公网 IP + HTTP**，无需域名、Caddy、Docker、RDS 或证书。
 
 ## 推荐：在电脑上用 Makefile 部署
 
-在项目根目录执行，默认连接 `root@203.0.113.10:22`，自动使用本机私钥 `~/.ssh/daily-plenty-ecs`：
+服务器地址只保存在本机 `deploy.local.mk`（已被 .gitignore 排除，也不进入源码包），首次复制模板并填写公网 IP：
+
+```bash
+cp deploy.local.mk.example deploy.local.mk   # 编辑 SSH_HOST / SSH_USER / SSH_KEY
+make help                                    # 确认当前服务器
+```
+
+之后在项目根目录执行，连接 `deploy.local.mk` 中的服务器，默认私钥 `~/.ssh/daily-plenty-ecs`：
 
 ```bash
 make deploy
@@ -12,7 +19,7 @@ make deploy
 
 `make deploy` 会自动打包最新源码、上传到唯一临时目录、准备 Node/pnpm 和 2 GiB Swap、构建发布并检查服务状态。SSH 登录在上传和发布之间复用；首次连接正常核对主机指纹，密码或私钥口令由 SSH 提示，不写入项目。
 
-发布成功后打开 **http://203.0.113.10:3000/setup**。两台手机直接使用这个地址，无需保持电脑或 SSH 隧道开启。初始化后日常访问 **http://203.0.113.10:3000/**。
+发布成功后打开 **http://<服务器IP>:3000/setup**。两台手机直接使用这个地址，无需保持电脑或 SSH 隧道开启。初始化后日常访问 **http://<服务器IP>:3000/**。
 
 阿里云控制台 → ECS → 北京地域 → 该实例 → 安全组 → 入方向，添加允许 TCP `3000/3000` 的规则。需要手机 Wi-Fi/流量随时访问时，授权对象填 `0.0.0.0/0`；SSH 22 端口保持仅自己的管理来源可访问。无需开放 80/443/13000。
 
@@ -51,7 +58,7 @@ make tunnel SSH_USER=ecs-user SSH_KEY="$HOME/.ssh/ecs.pem"
 ## 运行方式与目录
 
 ```text
-手机/电脑 http://203.0.113.10:3000 → ECS 0.0.0.0:3000
+手机/电脑 http://<服务器IP>:3000 → ECS 0.0.0.0:3000
                                       Node.js 单实例 → SQLite
 
 /opt/daily-plenty-tools/     独立 Node 22 与 pnpm，不覆盖系统 Node
@@ -73,8 +80,8 @@ make tunnel SSH_USER=ecs-user SSH_KEY="$HOME/.ssh/ecs.pem"
 
 ```bash
 bash deploy/package.sh /tmp/daily-plenty-source.tar.gz
-scp /tmp/daily-plenty-source.tar.gz root@203.0.113.10:/tmp/
-ssh root@203.0.113.10
+scp /tmp/daily-plenty-source.tar.gz root@<服务器IP>:/tmp/
+ssh root@<服务器IP>
 ```
 
 已有同名源码包时，换一个文件名，脚本不会覆盖。使用 SSH 密钥可给 `ssh`/`scp` 添加 `-i 本机密钥路径`。
@@ -132,13 +139,13 @@ DAILY_PLENTY_ALLOW_HTTP=true
 
 ## 4. 初始化与可选 SSH 隧道
 
-默认公网 HTTP：打开 **http://203.0.113.10:3000/setup**，设置第一个账号、至少 6 位密码和账本名称。无需填写初始化密钥。随后在「我们」生成邀请链接给另一位成员，链接会使用当前访问的公网地址。
+默认公网 HTTP：打开 **http://<服务器IP>:3000/setup**，设置第一个账号、至少 6 位密码和账本名称。无需填写初始化密钥。随后在「我们」生成邀请链接给另一位成员，链接会使用当前访问的公网地址。
 
 只有选择 `ACCESS_MODE=tunnel` 或临时排查本机接口时，才需要在电脑新开终端执行并保持连接：
 
 ```bash
 ssh -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 \
-  -L 127.0.0.1:13000:127.0.0.1:3000 root@203.0.113.10
+  -L 127.0.0.1:13000:127.0.0.1:3000 root@<服务器IP>
 ```
 
 隧道建立后浏览器打开 **http://localhost:13000/setup**。同一次登录保持使用相同主机名和协议；IP 地址与 localhost 的 Cookie 不共享。
@@ -173,7 +180,7 @@ sudo systemctl list-timers daily-plenty-backup.timer
 
 ```bash
 # 在本机执行，把文件名换成日志中实际生成的备份名。
-scp root@203.0.113.10:/var/backups/daily-plenty/实际备份文件名.db ~/Downloads/
+scp root@<服务器IP>:/var/backups/daily-plenty/实际备份文件名.db ~/Downloads/
 ```
 
 恢复会把账单回退到备份时点；备份后的新增/修改不在该副本内。先确定匹配的旧发布目录和备份文件，尤其是更新包含迁移时，**不能仅切换旧代码**。
@@ -202,7 +209,7 @@ systemctl start daily-plenty && systemctl start daily-plenty-backup.timer
 
 ## 7. 可选：以后切换 HTTPS
 
-HTTP 已支持两台手机直接访问。若以后需要 HTTPS 与完整 PWA，可准备域名、北京 ECS 对应的 ICP 备案及 DNS 指向 `203.0.113.10`，再启用 HTTPS 反向代理：
+HTTP 已支持两台手机直接访问。若以后需要 HTTPS 与完整 PWA，可准备域名、北京 ECS 对应的 ICP 备案及 DNS 指向 `<服务器IP>`，再启用 HTTPS 反向代理：
 
 1. 执行 `make deploy ACCESS_MODE=https`，恢复本机监听并关闭两个 HTTP Cookie 开关；后续更新保持相同 ACCESS_MODE。
 2. 安装 Caddy 或配置已有反向代理；`deploy/Caddyfile` 是预留模板，需将 `{$DAILY_PLENTY_DOMAIN}` 替换为实际域名，或为 Caddy 服务设置该环境变量。

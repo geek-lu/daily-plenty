@@ -9,5 +9,5 @@ TARGET=${1:-/tmp/daily-plenty-source.tar.gz}
 case "$TARGET" in "$PROJECT"/*) echo '请把源码包输出到项目外，避免递归打包'; exit 1 ;; esac
 [[ ! -e $TARGET ]] || { echo "文件已存在，未覆盖：$TARGET"; exit 1; }
 umask 077
-COPYFILE_DISABLE=1 tar -C "$PROJECT" --exclude='./node_modules' --exclude='./.next' --exclude='./.next-build' --exclude='./.git' --exclude='./.env*' --exclude='./.npmrc' --exclude='*.pem' --exclude='*.key' --exclude='*.db' --exclude='*.db-*' --exclude='*.sqlite*' --exclude='./data' --exclude='./backups' --exclude='./.cache' --exclude='./dist' --exclude='./.DS_Store' --exclude='./*.tsbuildinfo' -czf "$TARGET" .
+COPYFILE_DISABLE=1 tar -C "$PROJECT" --exclude='./node_modules' --exclude='./.next' --exclude='./.next-build' --exclude='./.git' --exclude='./.env*' --exclude='./deploy.local.mk' --exclude='./.npmrc' --exclude='*.pem' --exclude='*.key' --exclude='*.db' --exclude='*.db-*' --exclude='*.sqlite*' --exclude='./data' --exclude='./backups' --exclude='./.cache' --exclude='./dist' --exclude='./.DS_Store' --exclude='./*.tsbuildinfo' -czf "$TARGET" .
 echo "源码包：$TARGET"

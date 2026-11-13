@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# [INPUT]: Makefile 导出的连接参数/访问模式、现有打包/准备/发布脚本。
+# [INPUT]: Makefile 导出的连接参数（SSH_HOST 必填，来自本机 deploy.local.mk）/访问模式、现有打包/准备/发布脚本。
 # [OUTPUT]: 从本机串行打包、上传、远程执行，或打开隧道/运维命令。
 # [POS]: macOS Bash 3.2 / Linux 通用客户端，不保存密码，不复制本地账本。
 # [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
@@ -7,7 +7,7 @@ set -euo pipefail
 
 PROJECT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)
 ACTION=${1:-}
-SSH_HOST=${SSH_HOST:-203.0.113.10}
+SSH_HOST=${SSH_HOST:-}
 SSH_USER=${SSH_USER:-root}
 SSH_PORT=${SSH_PORT:-22}
 SSH_KEY=${SSH_KEY:-}
@@ -48,6 +48,7 @@ case "$ACTION" in
   deploy|update|tunnel|status|logs|backup) ;;
   *) fail '用法：remote.sh deploy|update|tunnel|status|logs|backup|package' ;;
 esac
+[[ -n $SSH_HOST ]] || fail '未配置 SSH_HOST：cp deploy.local.mk.example deploy.local.mk 后填写服务器公网 IP'
 [[ $SSH_HOST =~ ^[[:alnum:]][[:alnum:].-]*$ ]] || fail 'SSH_HOST 请填写服务器 IP、主机名或 SSH 配置别名'
 [[ $SSH_USER =~ ^[[:alnum:]_][[:alnum:]_.-]*$ ]] || fail 'SSH_USER 格式无效'
 valid_port "$SSH_PORT" || fail 'SSH_PORT 必须是 1–65535 的端口'

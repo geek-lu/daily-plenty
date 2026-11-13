@@ -22,5 +22,6 @@ check-routes 验证 reports 日/月/年真实接口的整数金额、补零和�
 
 check-routes 额外检查安装清单、四个 PNG、Apple 元数据、离线页及 /sw.js 禁缓存响应头；捕获断言失败并设置非零退出码，避免 Next 异常处理掩盖检查失败。
 四页 HTML 同时验证 maximum-scale=1 与 user-scalable=no 的 viewport 输出。
+check-routes 验证 /config 未登录 404，登录后 200 且 password_hash 打码、不含 scrypt 原文。
 
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md

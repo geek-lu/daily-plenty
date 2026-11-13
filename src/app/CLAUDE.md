@@ -9,6 +9,7 @@
 - globals.css：Tailwind v4 主题令牌和移动端基础控件。
 - setup/page.tsx：首次初始化的稳定入口，转交根页面状态判断。
 - join/page.tsx：邀请路由装配；JoinView 展示，runtime 处理加入流程。
+- config/：登录后可见的数据库只读浏览页（调试用，凭据列打码），不在导航内。
 - api/[...path]/route.ts：薄 HTTP 入口，转交 server/http/router；Cookie 在 http/context，初始化事务在 server/flows/accounts。
 
 页面不直接访问数据库；API 只转换请求，业务规则归 server。
