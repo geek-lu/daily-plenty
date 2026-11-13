@@ -1,0 +1,9 @@
+node_modules/
+.next/
+.next-build/
+data/
+backups/
+pnpm-lock.yaml
+next-env.d.ts
+*.tsbuildinfo
+migrations/*.sql

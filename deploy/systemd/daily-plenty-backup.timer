@@ -1,0 +1,13 @@
+# [INPUT]: 系统时钟。[OUTPUT]: 每天北京时间 03:30 左右运行备份。[POS]: 单机免费本地备份调度。
+# [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
+[Unit]
+Description=Daily Plenty daily backup schedule
+
+[Timer]
+OnCalendar=*-*-* 19:30:00 UTC
+RandomizedDelaySec=300
+Persistent=true
+Unit=daily-plenty-backup.service
+
+[Install]
+WantedBy=timers.target

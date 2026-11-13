@@ -1,0 +1,19 @@
+# [INPUT]: 当前发布包、已存在数据库。[OUTPUT]: 在线一致性备份。[POS]: 定时任务执行单元。
+# [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
+[Unit]
+Description=Daily Plenty SQLite backup
+ConditionPathExists=/var/lib/daily-plenty/daily-plenty.db
+
+[Service]
+Type=oneshot
+User=daily-plenty
+Group=daily-plenty
+WorkingDirectory=/opt/daily-plenty/current
+EnvironmentFile=/etc/daily-plenty/app.env
+ExecStart=/opt/daily-plenty-tools/node/bin/node /opt/daily-plenty/current/backup.mjs
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/daily-plenty /var/backups/daily-plenty

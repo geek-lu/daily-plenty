@@ -1,0 +1,29 @@
+# [INPUT]: /opt/daily-plenty/current 与 /etc/daily-plenty/app.env。[OUTPUT]: 单实例 Node 常驻服务。[POS]: ECS 进程管理。
+# [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
+[Unit]
+Description=Daily Plenty
+After=network.target
+
+[Service]
+Type=simple
+User=daily-plenty
+Group=daily-plenty
+WorkingDirectory=/opt/daily-plenty/current
+Environment=NODE_ENV=production
+EnvironmentFile=/etc/daily-plenty/app.env
+ExecStart=/opt/daily-plenty-tools/node/bin/node /opt/daily-plenty/current/server.js
+ExecStartPost=/opt/daily-plenty-tools/node/bin/node /opt/daily-plenty/current/healthcheck.mjs
+Restart=on-failure
+RestartSec=3
+TimeoutStartSec=60
+TimeoutStopSec=30
+UMask=0077
+MemoryMax=1200M
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/daily-plenty /var/backups/daily-plenty /opt/daily-plenty/current/.next-build/cache
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,680 @@
+<!doctype html>
+<!-- [INPUT]: styles.css 视觉令牌；本文件的拟议技术方案与节点说明。
+     [OUTPUT]: 声明式动效层、四页/抽屉、日/月/年统计与账单查询架构、用户/认证/账本边界及表关系。
+     [POS]: 设计包的技术评审入口；不创建任何生产基础设施。
+     [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md -->
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta name="theme-color" content="#f6f5f0" />
+    <title>日日有余 · 架构设计评审</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="review-bar">
+      <span class="eyebrow">DAILY PLENTY / DESIGN REVIEW 01</span>
+      <nav class="review-links" aria-label="设计评审导航">
+        <a href="index.html">01 交互原型 ↗</a>
+        <a href="index.html#flows">02 交互地图 ↗</a>
+        <a class="active" href="architecture.html" aria-current="page">03 架构设计</a>
+      </nav>
+    </header>
+    <main class="review-container">
+      <header class="review-heading">
+        <div class="row between">
+          <span class="tag">SYSTEM DESIGN / 架构提案</span>
+          <a href="index.html" class="small muted">日日有余 · DAILY PLENTY</a>
+        </div>
+        <h1>一个小家，一台服务器。</h1>
+        <p>
+          全栈 Node.js，共用 TypeScript
+          类型。以单实例、低成本、可恢复为目标；用清楚的边界应对同步和金额正确性，不为两个人搭建复杂基础设施。
+        </p>
+      </header>
+      <div class="note-box">
+        <b>推荐组合：</b>
+        Next.js App Router + TypeScript + Tailwind CSS + Zod + Drizzle ORM + SQLite。
+        <br />
+        正式工程已落地于 src/；本页为离线架构说明，不连接真实账本。全部账单通过 /records
+        独立页面查询。
+      </div>
+      <section class="panel" style="margin: 24px 0">
+        <h2 class="panel-title">四个真实页面，共用固定底部导航</h2>
+        <div class="diagram-row" style="margin-top: 20px">
+          <div class="node">
+            <b>账本 / → features/home</b><small>主区：记账与结余；次区：我的模板、最近 8 笔</small>
+          </div>
+          <div class="node">
+            <b>统计 /reports → features/reports</b
+            ><small>主区：日/月/年支出折线；同范围收支对比、分类排名、付款分布</small>
+          </div>
+          <div class="node">
+            <b>明细 /records → features/records</b
+            ><small>主区：筛选与账单；辅助：完整汇总、分页和导出</small>
+          </div>
+          <div class="node">
+            <b>我们 /together → features/together</b
+            ><small>主区：成员与邀请；次区：账号与退出</small>
+          </div>
+        </div>
+        <p class="legend">
+          (main)/layout → AppShell → 独立页面；底部四页导航 + 中央记账动作 fixed
+          常驻，加载与切页保留，内容预留导航及安全区。各页分别维护组件与样式，不使用首页 Screen
+          状态模拟页面。高级条件按需展开，选好后统一提交。列表、汇总、CSV 共享 SQL
+          条件；各维度取交集，多选分类取并集，日期包含起止当天。金额以元展示、整数分传递。浏览器返回与刷新保留条件，编辑后刷新汇总。
+        </p>
+      </section>
+      <section class="panel" style="margin: 24px 0">
+        <h2 class="panel-title">底部「记一笔」是共用抽屉组件</h2>
+        <div class="diagram-row" style="margin-top: 20px">
+          <div class="node">
+            <b>任意页面 · 底部 ＋</b><small>保持当前 URL、账本和筛选条件</small>
+          </div>
+          <div class="node">
+            <b>EntryComposer</b><small>共享布局挂载，当前用户/账本授权与新账单状态</small>
+          </div>
+          <div class="node">
+            <b>EntryDrawer → BottomDrawer</b
+            ><small>业务表单与容器分开；上滑、遮罩、焦点、键盘与滚动恢复</small>
+          </div>
+          <div class="node">
+            <b>保存成功</b><small>dataVersion 更新 → 当前页查询刷新；无需重载会话或跳转</small>
+          </div>
+        </div>
+      </section>
+      <nav class="tabs" aria-label="架构视图">
+        <button data-arch="deployment" class="active" aria-pressed="true">01 部署架构</button>
+        <a class="btn" href="schema.html">数据模型 ↗</a>
+        <button data-arch="request" aria-pressed="false">03 保存与同步</button>
+        <button data-arch="layers" aria-pressed="false">04 代码分层</button>
+      </nav>
+      <section id="arch-deployment">
+        <div class="architecture-layout">
+          <div class="diagram">
+            <p class="diagram-group-title">CLIENT / 两个独立登录的浏览器</p>
+            <div class="diagram-row">
+              <div class="node">
+                <b>iPhone · Safari</b>
+                <small>响应式网页 / 可添加主屏幕</small>
+              </div>
+              <div class="node">
+                <b>鸿蒙 · 浏览器</b>
+                <small>响应式网页 / 实机兼容性验证</small>
+              </div>
+            </div>
+            <div class="arrow-down">HTTPS · 同域 Cookie · JSON</div>
+            <div class="diagram-group">
+              <div class="diagram-group-title">ONE ECS / 一台 Linux 服务器 · 建议 2 GB 内存起</div>
+              <button class="node node-select" data-node="proxy" aria-pressed="false">
+                <b>Caddy</b>
+                <small>HTTPS 终止 · 反向代理 · 自动续证</small>
+              </button>
+              <div class="arrow-down">仅代理到本机 Node.js 端口</div>
+              <button class="node node-select green" data-node="app" aria-pressed="false">
+                <b>Next.js · Node.js 单进程</b>
+                <small>页面 + Route Handlers + 业务服务</small>
+              </button>
+              <div class="arrow-down">Drizzle · 参数化 SQL · 短事务</div>
+              <button class="node node-select green" data-node="db" aria-pressed="false">
+                <b>SQLite · WAL</b>
+                <small>/var/lib/daily-plenty/app.db · 持久磁盘</small>
+              </button>
+              <div class="arrow-down">一致性快照 · 不直接复制运行中的数据库文件</div>
+              <button class="node node-select" data-node="backup" aria-pressed="false">
+                <b>备份与恢复</b>
+                <small>每天快照 · 保留 7 日 + 4 周 · 定期下载到另一设备</small>
+              </button>
+            </div>
+            <p class="legend">点选节点查看职责与取舍。图示为拟议生产部署，不代表已上线。</p>
+          </div>
+          <aside class="diagram-aside" aria-live="polite">
+            <span class="eyebrow">SELECT A COMPONENT</span>
+            <h3 id="node-title">从简单开始。</h3>
+            <p id="node-description">
+              一套代码、一套数据、一台服务器。两人使用无需 Redis、消息队列、独立 API
+              服务或云数据库。
+            </p>
+            <div class="detail-label">主要职责</div>
+            <p id="node-role">点击左侧任意组件，查看具体边界。</p>
+            <div class="detail-label">需要知道的限制</div>
+            <p id="node-limit">
+              ECS 是单点，发生故障时服务不可用。保留机外副本，才有完整的数据恢复路径。
+            </p>
+          </aside>
+        </div>
+        <h2 class="section-title">为什么推荐这套，而不是继续加服务</h2>
+        <div class="panel table-wrap">
+          <table class="review-table" role="table">
+            <thead role="rowgroup">
+              <tr role="row">
+                <th scope="col" role="columnheader">组成</th>
+                <th scope="col" role="columnheader">推荐</th>
+                <th scope="col" role="columnheader">理由 / 边界</th>
+              </tr>
+            </thead>
+            <tbody role="rowgroup">
+              <tr role="row">
+                <td role="cell" data-label="组成">全栈框架</td>
+                <td role="cell" data-label="推荐">Next.js App Router + TypeScript</td>
+                <td role="cell" data-label="理由 / 边界">
+                  React 页面与 Node API 放在一个工程、一个部署单元；Route Handler 负责
+                  HTTP，业务逻辑独立。
+                </td>
+              </tr>
+              <tr role="row">
+                <td role="cell" data-label="组成">页面样式</td>
+                <td role="cell" data-label="推荐">Tailwind CSS v4 + CSS 变量</td>
+                <td role="cell" data-label="理由 / 边界">
+                  统一米白、墨灰、暗红令牌；不叠加大型后台组件库。正式工程的交互组件使用可访问性基础组件。
+                </td>
+              </tr>
+              <tr role="row">
+                <td role="cell" data-label="组成">数据校验</td>
+                <td role="cell" data-label="推荐">Zod</td>
+                <td role="cell" data-label="理由 / 边界">
+                  复用字段定义；客户端改善反馈，服务端重新校验金额、身份与账本权限。
+                </td>
+              </tr>
+              <tr role="row">
+                <td role="cell" data-label="组成">数据访问</td>
+                <td role="cell" data-label="推荐">Drizzle + better-sqlite3</td>
+                <td role="cell" data-label="理由 / 边界">
+                  类型化 schema 与可版本化迁移；适合低写并发单实例。原生驱动需匹配 Linux 架构和 Node
+                  版本。
+                </td>
+              </tr>
+              <tr role="row">
+                <td role="cell" data-label="组成">登录会话</td>
+                <td role="cell" data-label="推荐">账号密码 + 数据库存储的服务端会话</td>
+                <td role="cell" data-label="理由 / 边界">
+                  密码使用成熟库的 Argon2id；随机会话 token 仅在
+                  Cookie，数据库只存摘要。生产前完成专门安全验证。
+                </td>
+              </tr>
+              <tr role="row">
+                <td role="cell" data-label="组成">状态与请求</td>
+                <td role="cell" data-label="推荐">React 本地状态 + fetch</td>
+                <td role="cell" data-label="理由 / 边界">
+                  少量页面无需全局状态库；统一 runtime 处理加载、错误、刷新与草稿。
+                </td>
+              </tr>
+              <tr role="row">
+                <td role="cell" data-label="组成">部署与运行</td>
+                <td role="cell" data-label="推荐">Caddy + systemd + Node.js LTS</td>
+                <td role="cell" data-label="理由 / 边界">
+                  自动 HTTPS、进程重启；建议在本地或 CI 构建 Linux 产物，避免低配 ECS 执行重型构建。
+                </td>
+              </tr>
+              <tr role="row">
+                <td role="cell" data-label="组成">数据图表</td>
+                <td role="cell" data-label="推荐">CSS 条形图，后续按需 SVG</td>
+                <td role="cell" data-label="理由 / 边界">
+                  第一期展示分类和付款占比即可，不为几根柱子增加大型图表依赖。
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="details-grid" style="margin-top: 24px">
+          <div class="panel">
+            <h3 class="panel-title">费用边界</h3>
+            <ul class="list-clean">
+              <li>ECS 是主要持续费用，带宽、磁盘按实际套餐计算。</li>
+              <li>域名若已有可复用；新购域名会产生额外年费。</li>
+              <li>HTTPS 证书可免费；公网证书通常需域名和正确 DNS。</li>
+              <li>大陆服务器的公开网站通常需要备案；按实际部署地区处理。</li>
+            </ul>
+          </div>
+          <div class="panel">
+            <h3 class="panel-title">运行与恢复</h3>
+            <ul class="list-clean">
+              <li>单 Node 实例，数据库存放在发布目录之外。</li>
+              <li>SQLite WAL + busy timeout + 短事务；不启用多实例。</li>
+              <li>每天使用 SQLite backup API / 在线备份命令生成一致快照。</li>
+              <li>机外保存加密副本，并定期在临时库中验证恢复。</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="arch-request" hidden>
+        <div class="architecture-layout">
+          <div class="panel">
+            <h2 class="panel-title" style="margin-bottom: 28px">
+              从「保存账单」到「两个人都看见」
+            </h2>
+            <div class="timeline">
+              <article class="timeline-item">
+                <h3>浏览器 · 校验并生成 requestId</h3>
+                <p>金额转整数分，带上本次请求标识；设置保存中状态并保留表单。</p>
+              </article>
+              <article class="timeline-item">
+                <h3>POST /api/ledgers/:id/entries</h3>
+                <p>同域 HTTPS；会话取当前用户；检查 Origin / CSRF 防护、Zod 字段约束及请求大小。</p>
+              </article>
+              <article class="timeline-item">
+                <h3>业务服务 · 鉴权和规则校验</h3>
+                <p>
+                  确认当前成员、付款人成员资格、分类与日期合法。created_by
+                  由服务端身份设置，不接受客户端冒充。
+                </p>
+              </article>
+              <article class="timeline-item">
+                <h3>SQLite · 一个短事务</h3>
+                <p>检查幂等标识：已成功则返回原记录；否则写入 Entry 与 MutationRequest 并提交。</p>
+              </article>
+              <article class="timeline-item">
+                <h3>响应成功 · 再更新页面</h3>
+                <p>
+                  返回服务端记录和版本。刷新账单及概览后提示已保存；失败时保留输入，不把未保存数据混进统计。
+                </p>
+              </article>
+              <article class="timeline-item">
+                <h3>另一台手机 · 重新验证数据</h3>
+                <p>
+                  初次打开、页面重新可见、手动刷新时拉取最新账单。API 使用 private,
+                  no-store，避免共享数据被缓存。
+                </p>
+              </article>
+            </div>
+          </div>
+          <aside class="stack">
+            <div class="panel">
+              <h3 class="panel-title">失败不是「丢掉输入」</h3>
+              <ul class="list-clean">
+                <li>
+                  <b>400 / 字段错误</b>
+                  <br />
+                  <span class="muted">在对应输入旁提示，保留整张表单。</span>
+                </li>
+                <li>
+                  <b>401 / 会话失效</b>
+                  <br />
+                  <span class="muted">提示重新登录；当前页保留草稿，第一期不承诺刷新后恢复。</span>
+                </li>
+                <li>
+                  <b>403 / 非成员</b>
+                  <br />
+                  <span class="muted">拒绝操作；不展示其他账本数据。</span>
+                </li>
+                <li>
+                  <b>409 / 版本冲突</b>
+                  <br />
+                  <span class="muted">展示最新值，保留本地改动供用户比较。</span>
+                </li>
+                <li>
+                  <b>超时 / 网络中断</b>
+                  <br />
+                  <span class="muted">显示未确认状态；同 requestId 重试，防止重复账单。</span>
+                </li>
+              </ul>
+            </div>
+            <div class="note-box">
+              不引入 WebSocket。第一期采用打开 / 回到页面 /
+              手动刷新时同步；两台手机同时保持前台时不会自动实时更新。
+            </div>
+          </aside>
+        </div>
+        <h2 class="section-title">API 边界</h2>
+        <div class="panel table-wrap">
+          <table class="review-table" role="table">
+            <thead role="rowgroup">
+              <tr role="row">
+                <th scope="col" role="columnheader">接口</th>
+                <th scope="col" role="columnheader">行为</th>
+                <th scope="col" role="columnheader">约束</th>
+              </tr>
+            </thead>
+            <tbody role="rowgroup">
+              <tr role="row">
+                <td role="cell" data-label="接口">POST /api/auth/session</td>
+                <td role="cell" data-label="行为">账号密码登录</td>
+                <td role="cell" data-label="约束">
+                  失败限速、通用错误信息、数据库会话；仅初始化与邀请允许创建账号。
+                </td>
+              </tr>
+              <tr role="row">
+                <td role="cell" data-label="接口">GET /api/ledgers/:id/data</td>
+                <td role="cell" data-label="行为">首页月度概览、分类、成员与当前用户模板</td>
+                <td role="cell" data-label="约束">
+                  成员鉴权，首页取最近 8 笔；月度统计不随明细筛选改变。
+                </td>
+              </tr>
+              <tr role="row">
+                <td role="cell" data-label="接口">GET /api/ledgers/:id/reports</td>
+                <td role="cell" data-label="行为">日/月/年支出折线与同范围收支、分类、成员汇总</td>
+                <td role="cell" data-label="约束">
+                  granularity=day + period=YYYY-MM；month + YYYY；year
+                  为历年。成员鉴权、只读快照、按账单日期聚合；空白日期补零，软删除排除，不受列表分页限制。
+                </td>
+              </tr>
+              <tr role="row">
+                <td role="cell" data-label="接口">
+                  GET /api/ledgers/:id/entries<br />GET /api/ledgers/:id/entries/export
+                </td>
+                <td role="cell" data-label="行为">独立账单页的高级分页查询与全量 CSV</td>
+                <td role="cell" data-label="约束">
+                  start/end、kind、categoryIds、memberId、creatorId、minAmount/maxAmount（分）、search、sort、page；同账本鉴权、过滤一致，列表每页
+                  30 笔，汇总/导出包含全部匹配项。
+                </td>
+              </tr>
+              <tr role="row">
+                <td role="cell" data-label="接口">POST /api/ledgers/:id/entries</td>
+                <td role="cell" data-label="行为">新增收支</td>
+                <td role="cell" data-label="约束">金额整数分、幂等标识、服务端推导创建人。</td>
+              </tr>
+              <tr role="row">
+                <td role="cell" data-label="接口">
+                  PATCH / DELETE /api/ledgers/:id/entries/:entryId
+                </td>
+                <td role="cell" data-label="行为">修改或填写原因后软删除账单</td>
+                <td role="cell" data-label="约束">
+                  WHERE ledger_id + entryId + version；成功后版本递增。删除必传 reason，other 需填写
+                  reasonNote（最多 200 字），原因随删除事务保存。
+                </td>
+              </tr>
+              <tr role="row">
+                <td role="cell" data-label="接口">POST /api/ledgers/:id/categories</td>
+                <td role="cell" data-label="行为">动态新增共享分类</td>
+                <td role="cell" data-label="约束">可编辑成员；同账本、同收支类型内名称唯一。</td>
+              </tr>
+              <tr role="row">
+                <td role="cell" data-label="接口">
+                  GET / POST /api/ledgers/:id/templates<br />PATCH / DELETE
+                  /api/ledgers/:id/templates/:templateId
+                </td>
+                <td role="cell" data-label="行为">查询、新增、修改、删除我的模板</td>
+                <td role="cell" data-label="约束">
+                  user_id 来自会话，所有查询和修改限定 ledger_id + user_id；无法读取或修改对方模板。
+                </td>
+              </tr>
+              <tr role="row">
+                <td role="cell" data-label="接口">POST /api/ledgers/:id/invites</td>
+                <td role="cell" data-label="行为">生成一次性邀请</td>
+                <td role="cell" data-label="约束">
+                  仅创建者、有效期、可撤销；第二名成员加入后不能再使用。
+                </td>
+              </tr>
+              <tr role="row">
+                <td role="cell" data-label="接口">POST /api/invites/accept</td>
+                <td role="cell" data-label="行为">创建伴侣账号并加入</td>
+                <td role="cell" data-label="约束">
+                  有效 token；消费邀请、成员上限与账号创建采用事务。
+                </td>
+              </tr>
+              <tr role="row">
+                <td role="cell" data-label="接口">GET /api/ledgers/:id/export</td>
+                <td role="cell" data-label="行为">导出 CSV</td>
+                <td role="cell" data-label="约束">
+                  成员鉴权、过滤一致、转义引号和公式前缀、分页读取大数据量。
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <section id="arch-layers" hidden>
+        <h2 class="section-title">User 是独立模块，认证与账本各有边界</h2>
+        <div class="entity-grid">
+          <article class="entity">
+            <h3>user / 用户</h3>
+            <p>User：稳定身份、显示名称、账号状态</p>
+            <small
+              >负责当前用户资料查询、昵称修改和身份生命周期；停用时保留历史引用。首期不增加用户管理后台或公开用户搜索。</small
+            >
+            <p style="margin-top: 12px">GET /api/users/me<br />PATCH /api/users/me</p>
+            <small
+              >身份来自会话；PATCH 仅接受 display_name，不接受 user_id、权限、disabled_at
+              或密码字段。</small
+            >
+          </article>
+          <article class="entity">
+            <h3>auth / 认证</h3>
+            <p>Session：登录、退出、密码验证、会话</p>
+            <small
+              >负责密码哈希与验证、登录限速、会话创建和撤销。通过注入的服务端凭据接口取得认证所需字段，不将
+              password_hash 返回浏览器。</small
+            >
+            <p style="margin-top: 12px">POST /api/auth/session<br />DELETE /api/auth/session</p>
+            <small
+              >登录确认账号有效；每次受保护请求重新检查会话和用户状态，不能只在登录时检查停用状态。</small
+            >
+          </article>
+          <article class="entity">
+            <h3>ledger / 账本</h3>
+            <p>Ledger、Membership、Invite<br />Category、Entry、MutationRequest</p>
+            <small
+              >负责账本数据、成员角色和邀请名额。一个用户在不同账本可拥有不同角色，owner / editor
+              不作为 User 的全局角色字段。</small
+            >
+            <p style="margin-top: 12px">/api/ledgers/:id/…</p>
+            <small>每次访问都按目标账本检查成员身份；「已登录」不等于「有权访问这个账本」。</small>
+          </article>
+        </div>
+        <div class="review-callout">
+          模块不等于独立服务。user、auth、ledger 仍在同一个 Node.js
+          应用和数据库内；首期不为拆模块增加部署或基础设施成本。
+        </div>
+        <div class="panel" style="margin-bottom: 24px">
+          <h3 class="panel-title">跨模块流程由 server/flows 组合</h3>
+          <ul class="list-clean">
+            <li>
+              <b>创建账号 / 接受邀请：</b>流程协调器组合 user 的身份创建、auth 的密码处理、ledger
+              的邀请与成员规则，并在同一个事务内完成持久化。
+            </li>
+            <li>
+              <b>停用账号：</b>先处理仍由该账号管理的账本，user 更新状态，auth
+              撤销会话；事务统一提交，账单与历史身份不删除。
+            </li>
+            <li>
+              <b>依赖方向：</b>HTTP 适配 → flow → 模块服务 → 仓储。模块服务不互相
+              import；协调层注入跨模块能力和事务上下文。
+            </li>
+            <li>
+              <b>字段归属：</b>User 行由 user
+              仓储维护；账号与密码的专用访问能力仅供认证流程使用，个人资料读取与更新采用字段白名单。后续新增第三方登录时再迁移独立认证身份表。
+            </li>
+          </ul>
+        </div>
+        <div class="details-grid">
+          <div class="panel">
+            <h2 class="panel-title" style="margin-bottom: 20px">实际目录 · 页面与查询职责分开</h2>
+            <pre class="code-tree">
+src/
+├── app/
+│   ├── (main)/
+│   │   ├── layout.tsx    共用 Shell 与固定底栏
+│   │   ├── page.tsx      / 日常账本
+│   │   ├── reports/page.tsx   /reports 统计
+│   │   ├── records/page.tsx   /records 明细
+│   │   └── together/page.tsx  /together 我们
+│   ├── setup/、join/      初始化与邀请
+│   └── api/               HTTP 适配与会话边界
+├── features/
+│   ├── shell/             共用会话、认证、底部导航
+│   ├── entry/             布局级新记账抽屉与写入 runtime
+│   ├── home/              账本页面、录入 runtime、专属样式
+│   ├── reports/           维度 URL/runtime、ExpenseTrend 折线、同范围统计页面
+│   ├── together/          成员页面、邀请 runtime、专属样式
+│   ├── ledger/            共用 HTTP、editor 表单/写入/锁、概览 runtime 与账单 UI
+│   └── records/
+│       ├── filters.ts     纯筛选规则与 URL
+│       ├── runtime.ts     查询、导航、导出
+│       ├── useEntryEditor.ts  编辑与原因删除
+│       ├── filter-panel/  搜索/高级字段与草稿 runtime
+│       ├── RecordsResults.tsx  汇总、分页与详情
+│       └── RecordsPage.tsx  查询页面编排
+├── ui/                   Presence/Collapse 动效、React 下载链接；不依赖业务
+├── server/
+│   ├── user/、auth/       用户、凭据、会话
+│   ├── ledger/
+│   │   ├── records/      授权查询、SQL 过滤与全量导出
+│   │   ├── csv.ts        两种导出共用的列与编码
+│   │   └── ...           账本、成员、邀请、写入与仓储
+│   ├── flows/accounts.ts 初始化、登录、邀请加入协调
+│   ├── http/             路由表、JSON/错误适配、Cookie 上下文
+│   └── db/               schema / 连接
+└── shared/               类型、金额、report 日期补零与输入校验
+migrations/               增量 SQL 迁移
+deploy/                   Alibaba Cloud Linux 3 发布、SSH 预览、systemd 与备份；Caddy 为未来 HTTPS 模板</pre
+            >
+            <p class="legend">
+              页面通过 HTTP 调用服务，浏览器不导入数据库模块；本次筛选复用现有表结构，无新增迁移。
+            </p>
+          </div>
+          <div class="panel">
+            <h2 class="panel-title" style="margin-bottom: 16px">前端单向依赖</h2>
+            <div class="layer-row">
+              <b>L5 · UI</b>
+              <span>渲染和输入；调用 runtime，可以消费纯规则，不直接调用 HTTP 或写库。</span>
+            </div>
+            <div class="layer-row">
+              <b>L4 · Runtime</b>
+              <span>收集登录上下文，管理提交 / 加载 / 错误，调用 service；不堆积计算规则。</span>
+            </div>
+            <div class="layer-row">
+              <b>L3 · Service</b>
+              <span
+                >金额 / 分类规则与客户端流程；不依赖 React、DOM 或 Provider，通过参数接收
+                ctx。</span
+              >
+            </div>
+            <div class="layer-row">
+              <b>L2 · Repo</b>
+              <span>浏览器请求与响应转换；不决定 UI 生命周期，不导入 runtime。</span>
+            </div>
+            <div class="layer-row">
+              <b>L1 · Config</b>
+              <span>静态展示配置与默认值，只依赖类型；可配置分类由数据库经 Repo 获取。</span>
+            </div>
+            <div class="layer-row">
+              <b>L0 · Types</b>
+              <span>数据形状、业务语言，不依赖上层。</span>
+            </div>
+            <div class="note-box" style="margin-top: 24px">
+              UI → Runtime → Service → Repo → Config →
+              Types。允许依赖更低层；禁止反向依赖。只有逻辑层要求，不强制建立六层目录。
+            </div>
+          </div>
+        </div>
+        <h2 class="section-title">浏览器和服务器之间有一条硬边界</h2>
+        <div class="diagram">
+          <div class="diagram-row">
+            <div class="node">
+              <b>浏览器 feature</b>
+              <small>交互状态 + HTTP Repo</small>
+            </div>
+            <div class="node red">
+              <b>HTTP / JSON</b>
+              <small>schema 校验 · 会话身份</small>
+            </div>
+            <div class="node green">
+              <b>server-only</b>
+              <small>服务端 Service → SQL Repo → SQLite</small>
+            </div>
+          </div>
+          <p class="legend">
+            客户端不能 import 数据库、密码逻辑和服务端会话；server-only
+            模块由构建边界限制。服务端业务服务通过参数接收身份，并在每次操作重新鉴权。
+          </p>
+        </div>
+        <div class="details-grid" style="margin-top: 24px">
+          <div class="panel">
+            <h3 class="panel-title">避免重复业务逻辑</h3>
+            <p class="muted" style="margin-top: 12px; font-size: 13px">
+              共享 schema 定义数据约束；客户端规则负责及时反馈，服务端规则具有最终权威。SQL
+              仓储只存取数据，不引用 React。跨域操作由显式协调流程组合，不让两个业务 Service
+              互相依赖。
+            </p>
+          </div>
+          <div class="panel">
+            <h3 class="panel-title">验证重点</h3>
+            <ul class="list-clean">
+              <li>金额精度、月份归属与统计一致性。</li>
+              <li>未登录 / 非成员无法读取或修改账单。</li>
+              <li>重复提交只记一笔，旧版本不能覆盖新修改。</li>
+              <li>iPhone 与鸿蒙实机的键盘、日期选择、弹层。</li>
+              <li>备份可恢复，升级前迁移可在副本上验证。</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+      <h2 class="section-title">分两步把它做成，而不是一次做大</h2>
+      <div class="details-grid">
+        <div class="panel">
+          <span class="eyebrow">NOW / 当前交付</span>
+          <h3 class="serif" style="font-size: 24px; margin: 12px 0">先评审体验和边界</h3>
+          <p class="muted" style="font-size: 13px">
+            可操作
+            HTML、交互流程图、架构与数据方案。你可以先修改配色、首页布局、记账字段和双方权限，暂不承担部署成本。
+          </p>
+        </div>
+        <div class="panel">
+          <span class="eyebrow">NEXT / 确认后实现</span>
+          <h3 class="serif" style="font-size: 24px; margin: 12px 0">再连上真实的生活</h3>
+          <p class="muted" style="font-size: 13px">
+            搭建正式 Node.js 工程、账号与共享账本、持久化及导出，然后配置 ECS、HTTPS 和备份。PWA
+            安装、离线草稿与账单导入按实际需要追加。
+          </p>
+        </div>
+      </div>
+      <footer class="review-footer">
+        <span>架构提案 v0.3 · 未部署 · 依赖版本在实施时锁定并验证兼容性</span>
+        <a href="index.html">← 回到交互原型</a>
+      </footer>
+    </main>
+    <script>
+      /* [INPUT]: 架构面板与节点按钮；[OUTPUT]: 图层切换、组件职责详情。
+       * [POS]: 仅用于当前 HTML 评审导航；不发起网络请求。
+       * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
+      const nodeDetails = {
+        proxy: [
+          'Caddy / 入口',
+          '一个公网入口负责 HTTPS 和反向代理，浏览器与 API 使用同一个域名。',
+          '管理证书、HTTPS 跳转与基础请求限制。Node 仅监听本机地址。',
+          '证书签发需要网络、域名和 DNS 条件。大陆公开站点应先处理备案。',
+        ],
+        app: [
+          'Next.js / 应用',
+          'Node.js 运行时承载页面、API、鉴权与业务规则，以单实例部署。',
+          'HTTP 层解析输入；业务层验证成员、金额、幂等与版本；仓储层参数化读写。',
+          '2 GB 内存是起步建议而非容量保证。原生数据库驱动需在兼容 Linux 环境构建验证。',
+        ],
+        db: [
+          'SQLite / 唯一数据源',
+          '两人小账本适合单文件数据库；启用 WAL 提升读写并行，控制写事务长度。',
+          '保存账本、成员、分类、账单与身份数据。金额使用整数最小单位（CNY 为分），迁移版本受控。',
+          '不使用多实例共享数据库文件，不把数据库放进临时目录。增长到高写并发时再评估 PostgreSQL。',
+        ],
+        backup: [
+          '备份 / 可恢复的日常',
+          '先生成一致的数据库快照，再归档备份。部署不覆盖数据目录。',
+          '每天保留快照，验证 integrity_check；定期把加密备份下载到另一设备，并做恢复演练。',
+          '同机快照无法抵御磁盘丢失。零额外云服务成本下，需要人工定期保留机外副本。',
+        ],
+      };
+      document.querySelectorAll('[data-arch]').forEach((button) =>
+        button.addEventListener('click', () => {
+          document.querySelectorAll('[id^="arch-"]').forEach((panel) => {
+            panel.hidden = panel.id !== `arch-${button.dataset.arch}`;
+          });
+          document.querySelectorAll('[data-arch]').forEach((item) => {
+            item.classList.toggle('active', item === button);
+            item.setAttribute('aria-pressed', String(item === button));
+          });
+        }),
+      );
+      document.querySelectorAll('[data-node]').forEach((button) =>
+        button.addEventListener('click', () => {
+          ['node-title', 'node-description', 'node-role', 'node-limit'].forEach((id, index) => {
+            document.getElementById(id).textContent = nodeDetails[button.dataset.node][index];
+          });
+          document
+            .querySelectorAll('[data-node]')
+            .forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
+        }),
+      );
+    </script>
+  </body>
+</html>

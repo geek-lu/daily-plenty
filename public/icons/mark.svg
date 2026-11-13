@@ -1,0 +1,13 @@
+<!-- [INPUT]: 品牌暗红/米白色与「余」字笔形。
+     [OUTPUT]: 桌面图标的矢量母版。
+     [POS]: 本地资源；主体位于遮罩安全圆内，不依赖字体或外网。
+     [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#7c302f" />
+  <g fill="none" stroke="#fffefa" stroke-width="20" stroke-linecap="square" stroke-linejoin="round">
+    <path d="M151 235Q216 197 256 144Q296 197 361 235" />
+    <path d="M206 235H306M176 278H336" />
+    <path d="M256 240V355Q256 370 231 363" />
+    <path d="M215 315L177 355M297 315L335 355" />
+  </g>
+</svg>

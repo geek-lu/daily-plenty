@@ -1,0 +1,502 @@
+/* [INPUT]: 评审 HTML 语义类名与 base.css 视觉令牌。
+ * [OUTPUT]: 移动端断点及减少动态效果适配。
+ * [POS]: 离线评审样式；由 ../styles.css 按顺序加载。
+ * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
+@media (min-width: 1500px) {
+  .main {
+    padding: 48px 56px;
+  }
+  .page-head {
+    margin-bottom: 40px;
+  }
+  .stat {
+    padding: 28px 32px;
+  }
+  .stat-amount {
+    font-size: 38px;
+  }
+}
+@media (max-width: 1100px) {
+  .main {
+    padding: 28px;
+  }
+  .content-grid {
+    grid-template-columns: minmax(0, 1.3fr) minmax(240px, 1fr);
+    gap: 20px;
+  }
+  .stat {
+    padding: 20px;
+  }
+  .stat-amount {
+    font-size: 28px;
+  }
+  .panel {
+    padding: 20px;
+  }
+  .architecture-layout {
+    grid-template-columns: 1fr;
+  }
+  .diagram-aside {
+    display: grid;
+    gap: 8px;
+  }
+  .entity-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 900px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    display: none;
+  }
+  .main {
+    padding: 28px max(24px, env(safe-area-inset-right)) calc(110px + env(safe-area-inset-bottom))
+      max(24px, env(safe-area-inset-left));
+  }
+  .mobile-brand {
+    display: flex;
+    margin-bottom: 28px;
+  }
+  .mobile-brand .brand-name {
+    font-size: 19px;
+  }
+  .mobile-brand .seal {
+    width: 30px;
+    height: 34px;
+    font-size: 23px;
+  }
+  .mobile-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    padding: 8px max(12px, env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom))
+      max(12px, env(safe-area-inset-left));
+    z-index: 4;
+  }
+  .mobile-nav button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    min-width: 54px;
+    min-height: 46px;
+    color: var(--muted);
+  }
+  .mobile-nav .active {
+    color: var(--accent);
+  }
+  .mobile-nav .mobile-add {
+    display: grid;
+    place-items: center;
+    background: var(--accent);
+    color: var(--surface);
+    border-radius: 8px;
+    min-width: 48px;
+  }
+  .review-container {
+    padding: 32px max(24px, env(safe-area-inset-right)) calc(48px + env(safe-area-inset-bottom))
+      max(24px, env(safe-area-inset-left));
+  }
+  .review-bar {
+    padding: 8px 24px;
+  }
+  .review-links {
+    gap: 16px;
+  }
+  .flow-track {
+    gap: 20px;
+  }
+  .flow-card {
+    padding: 16px;
+  }
+  .flow-card:not(:last-child):after {
+    right: -17px;
+  }
+  .page-head h1 {
+    font-size: 28px;
+  }
+  .toast {
+    bottom: calc(92px + env(safe-area-inset-bottom));
+  }
+  input:not(#amount),
+  select {
+    font-size: 16px;
+  }
+  .month-select {
+    max-width: none;
+    font-size: 16px;
+  }
+  .review-links a,
+  .review-links button,
+  .text-btn,
+  .btn.small-btn,
+  .segmented button,
+  .delete-action {
+    min-height: 44px;
+  }
+  .icon-btn {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+  }
+  .review-heading > .row {
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 650px) {
+  .review-bar {
+    padding: max(4px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 4px
+      max(12px, env(safe-area-inset-left));
+    justify-content: center;
+  }
+  .review-bar > .eyebrow {
+    display: none;
+  }
+  .review-links {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+    text-align: center;
+  }
+  .review-links button,
+  .review-links a {
+    font-size: 12px;
+    display: grid;
+    place-items: center;
+  }
+  .main {
+    padding: 24px max(16px, env(safe-area-inset-right)) calc(106px + env(safe-area-inset-bottom))
+      max(16px, env(safe-area-inset-left));
+  }
+  .mobile-brand {
+    margin-bottom: 24px;
+  }
+  .page-head {
+    align-items: flex-start;
+    margin-bottom: 24px;
+    gap: 12px;
+  }
+  .page-head h1 {
+    font-size: clamp(24px, 7vw, 30px);
+  }
+  .page-head > .btn,
+  #page-kicker {
+    display: none;
+  }
+  .page-head p {
+    font-size: 12px;
+  }
+  .eyebrow {
+    font-size: 10px;
+  }
+  .overview-meta {
+    font-size: 12px;
+    flex-wrap: wrap;
+    column-gap: 12px;
+    row-gap: 4px;
+  }
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-bottom: 20px;
+  }
+  .stat.main-stat {
+    grid-column: 1/-1;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    padding: 24px;
+  }
+  .stat {
+    padding: 16px;
+    min-width: 0;
+  }
+  .stat-amount {
+    font-size: clamp(18px, 5.5vw, 26px);
+    overflow-wrap: anywhere;
+  }
+  .stat-amount .currency {
+    font-size: 14px;
+    vertical-align: 2px;
+    margin-right: 2px;
+  }
+  .main-stat .stat-amount {
+    font-size: clamp(30px, 10vw, 40px);
+  }
+  .stat-caption {
+    font-size: 11px;
+    margin-top: 8px;
+  }
+  .content-grid,
+  .report-grid,
+  .details-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  /* ---- 手机首页：模板优先，账单其次 ---- */
+  #screen-home .content-grid {
+    grid-template-areas: 'quick' 'recent' 'budget' 'house';
+  }
+  #screen-home .stack {
+    display: contents;
+  }
+  .quick-panel {
+    grid-area: quick;
+  }
+  .recent-panel {
+    grid-area: recent;
+  }
+  .budget-panel {
+    grid-area: budget;
+  }
+  .house-note {
+    grid-area: house;
+  }
+  .panel {
+    padding: 20px;
+  }
+  .quiet-note {
+    flex-direction: column;
+    gap: 4px;
+  }
+  .filter-bar {
+    gap: 8px;
+  }
+  .filter-bar input {
+    flex-basis: 100%;
+  }
+  .filter-bar select {
+    flex: 1;
+    max-width: none;
+  }
+  .members {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .member-card {
+    padding: 16px;
+  }
+  .review-container {
+    padding: 28px max(16px, env(safe-area-inset-right)) calc(40px + env(safe-area-inset-bottom))
+      max(16px, env(safe-area-inset-left));
+  }
+  .review-heading h1 {
+    font-size: 29px;
+  }
+  .review-heading p {
+    font-size: 13px;
+  }
+  .flow-track {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .flow-card {
+    padding: 20px;
+  }
+  .flow-card:not(:last-child):after {
+    content: '↓';
+    right: auto;
+    left: 50%;
+    top: auto;
+    bottom: -24px;
+  }
+  .flow-step {
+    margin-bottom: 8px;
+  }
+  /* ---- 评审内容：表格转卡片，保留表头语义 ---- */
+  .tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+    overflow: visible;
+  }
+  .tabs button {
+    padding: 12px 8px;
+    font-size: 13px;
+  }
+  .review-table {
+    display: block;
+    min-width: 0;
+  }
+  .review-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .review-table tbody {
+    display: grid;
+    gap: 16px;
+  }
+  .review-table tr {
+    display: block;
+    min-width: 0;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .review-table tr:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+  .review-table td {
+    display: block;
+    padding: 8px 0;
+    border: 0;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+  }
+  .review-table td::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 4px;
+    font-weight: 400;
+  }
+  .review-table td:first-child {
+    white-space: normal;
+    font-size: 15px;
+  }
+  .review-footer {
+    flex-direction: column;
+  }
+  .diagram {
+    padding: 16px;
+  }
+  .diagram-group {
+    padding: 12px;
+  }
+  .diagram-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .diagram-row .node {
+    flex: auto;
+  }
+  .node {
+    padding: 12px 8px;
+    font-size: 12px;
+  }
+  .node small {
+    font-size: 12px;
+  }
+  .entity-grid {
+    grid-template-columns: 1fr;
+  }
+  .layer-row {
+    grid-template-columns: 82px 1fr;
+    padding: 12px;
+  }
+  .diagram-aside {
+    padding: 20px;
+  }
+  .review-callout {
+    font-size: 12px;
+  }
+  .dialog-inner {
+    padding: 20px max(16px, env(safe-area-inset-right)) 16px max(16px, env(safe-area-inset-left));
+  }
+  dialog {
+    position: fixed;
+    inset: auto 0 max(0px, calc(100dvh - var(--viewport-bottom, 100dvh)));
+    width: 100%;
+    max-width: 100%;
+    max-height: min(94dvh, calc(var(--viewport-height, 100dvh) - 12px));
+    margin: 0;
+    border-radius: 16px 16px 0 0;
+    border-bottom: 0;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .dialog-head {
+    margin-bottom: 16px;
+  }
+  .amount-field {
+    padding: 12px 0;
+    margin-bottom: 16px;
+  }
+  .category-grid {
+    margin-bottom: 16px;
+  }
+  .form-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+    gap: 12px;
+  }
+  input[type='date'] {
+    display: block;
+    max-width: 100%;
+    min-height: 46px;
+  }
+  input[type='date']::-webkit-date-and-time-value {
+    text-align: left;
+    min-height: 1.5em;
+  }
+  .dialog-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    gap: 8px;
+    margin-top: 16px;
+    padding: 12px 0 4px;
+    background: var(--surface);
+  }
+  .dialog-actions .btn {
+    font-size: 13px;
+    padding: 10px 12px;
+  }
+  .amount-input input {
+    font-size: 40px;
+  }
+  .entry-meta {
+    font-size: 11px;
+  }
+  .panel-head {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .code-tree {
+    padding: 12px;
+    font-size: 11px;
+  }
+}
+@media (max-width: 380px) {
+  .form-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ledger-row {
+    gap: 8px;
+  }
+  .category-icon {
+    width: 32px;
+    height: 36px;
+  }
+  .entry-amount {
+    font-size: 14px;
+  }
+  .entry-arrow {
+    display: none;
+  }
+  .panel {
+    padding: 16px;
+  }
+  .layer-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto !important;
+    transition: none !important;
+  }
+}

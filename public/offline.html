@@ -1,0 +1,82 @@
+<!doctype html>
+<!-- [INPUT]: 无网络依赖。
+     [OUTPUT]: 离线时的恢复入口；没有账单、身份或本地提交队列。
+     [POS]: 唯一由 Service Worker 缓存的公共页面。
+     [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md -->
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta name="theme-color" content="#f6f5f0" />
+    <title>等待连接 · 日日有余</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+        color: #30332e;
+        background: #f6f5f0;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+      }
+      main {
+        box-sizing: border-box;
+        width: min(100%, 420px);
+        padding: 32px max(24px, env(safe-area-inset-right)) 32px
+          max(24px, env(safe-area-inset-left));
+      }
+      .mark {
+        display: grid;
+        place-items: center;
+        width: 64px;
+        height: 64px;
+        color: #fffefa;
+        background: #7c302f;
+        font:
+          40px Georgia,
+          'Songti SC',
+          serif;
+        border-radius: 8px;
+      }
+      h1 {
+        margin-top: 28px;
+        font:
+          28px Georgia,
+          'Songti SC',
+          serif;
+      }
+      p {
+        color: #72766a;
+        font-size: 16px;
+        line-height: 1.8;
+      }
+      a {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 48px;
+        margin-top: 28px;
+        border-radius: 4px;
+        background: #7c302f;
+        color: #fffefa;
+        text-decoration: none;
+      }
+      a:focus-visible {
+        outline: 2px solid #7c302f;
+        outline-offset: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="mark" aria-hidden="true">余</div>
+      <h1>连接回来，再记日常。</h1>
+      <p>暂时无法连接账本，请检查网络后再试。记账和查看账单需要联网。</p>
+      <a href="/">重新打开账本</a>
+    </main>
+  </body>
+</html>

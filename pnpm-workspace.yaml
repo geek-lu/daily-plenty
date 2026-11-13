@@ -1,0 +1,6 @@
+# [INPUT]: pnpm 10 的依赖安装策略。
+# [OUTPUT]: 允许 SQLite 驱动安装/编译当前平台的原生模块。
+# [POS]: 项目级安装配置；仅放行已确认需要构建的依赖。
+# [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
+onlyBuiltDependencies:
+  - better-sqlite3

@@ -1,0 +1,394 @@
+<!doctype html>
+<!-- [INPUT]: styles.css 与数据库设计提案。
+     [OUTPUT]: 离线数据库关系、字段与扩展路线评审。
+     [POS]: architecture.html 的数据模型分册，无动态脚本或网络依赖。
+     [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md -->
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <title>日日有余 · 数据模型评审</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="review-bar">
+      <span class="eyebrow">DAILY PLENTY / DATA MODEL</span>
+      <nav class="review-links" aria-label="设计评审导航">
+        <a href="index.html">交互原型</a>
+        <a href="architecture.html">架构设计</a>
+        <a class="active" href="schema.html" aria-current="page">数据模型</a>
+      </nav>
+    </header>
+    <main class="review-container">
+      <section id="arch-data">
+        <div class="review-heading">
+          <h2 class="serif" style="font-size: 26px">今天是两个人，以后也装得下更多日常。</h2>
+          <p style="margin-top: 8px">
+            以账本为数据边界，成员和分类独立建表。两人、一本账和人民币是第一期的产品规则，不把人数或分类名称写死在表结构里。
+          </p>
+        </div>
+        <div class="note-box">
+          本节为正式数据库提案 v0.2；HTML
+          原型仍使用内存中的两名示例成员和固定分类，没有创建数据库或迁移。
+        </div>
+        <h2 class="section-title">核心关系 · 从一开始支持多对多</h2>
+        <div class="diagram">
+          <div class="diagram-row">
+            <div class="node">
+              <b>User / 用户</b>
+              <small>一个用户可以加入多个账本</small>
+            </div>
+            <div class="node green">
+              <b>1 → N Membership N ← 1</b>
+              <small>成员关系承载角色和加入状态</small>
+            </div>
+            <div class="node">
+              <b>Ledger / 账本</b>
+              <small>一个账本可以有多位成员</small>
+            </div>
+          </div>
+          <div class="arrow-down">Ledger 1 → N Category；Ledger 1 → N Entry</div>
+          <div class="diagram-row">
+            <div class="node">
+              <b>Category / 分类</b>
+              <small>账本内管理 · 可排序、重命名、归档</small>
+            </div>
+            <div class="node green">
+              <b>Entry / 收支记录</b>
+              <small>N → 1 分类；N → 1 付款成员</small>
+            </div>
+          </div>
+          <p class="legend">
+            账单的分类与付款成员必须属于同一账本；由复合外键限制，服务端同时验证有效状态。
+          </p>
+        </div>
+        <h2 class="section-title">第一期核心表</h2>
+        <div class="entity-grid">
+          <article class="entity">
+            <h3>User / 用户</h3>
+            <p>
+              id UUID · login_name UNIQUE
+              <br />
+              display_name · password_hash
+              <br />
+              disabled_at
+              <br />
+              created_at · updated_at
+            </p>
+            <small
+              >由 user
+              模块维护身份与资料，不用「我」「TA」作为主键。首期账号和密码哈希仍在此表；凭据仅经服务端专用接口访问，不进入个人资料响应。</small
+            >
+          </article>
+          <article class="entity">
+            <h3>Ledger / 账本</h3>
+            <p>
+              id UUID · name
+              <br />
+              owner_user_id → User
+              <br />
+              base_currency_code DEFAULT CNY
+              <br />
+              timezone DEFAULT Asia/Shanghai
+              <br />
+              archived_at
+              <br />
+              created_at · updated_at
+            </p>
+            <small
+              >不设置全局唯一账本限制。所有者由 owner_user_id
+              唯一定义，创建时事务内建立有效成员关系。</small
+            >
+          </article>
+          <article class="entity">
+            <h3>Membership / 账本成员</h3>
+            <p>
+              id UUID · ledger_id · user_id
+              <br />
+              role: editor | viewer
+              <br />
+              joined_at · left_at
+              <br />
+              UNIQUE(ledger_id, user_id)
+              <br />
+              UNIQUE(ledger_id, id)
+            </p>
+            <small
+              >两人上限是服务端规则。第一期双方为
+              editor，所有者另有成员管理权限；退出保留记录，再加入复用关系。</small
+            >
+          </article>
+          <article class="entity">
+            <h3>Category / 可配置分类</h3>
+            <p>
+              id UUID · ledger_id
+              <br />
+              kind: expense | income
+              <br />
+              name · icon · sort_order · archived_at
+              <br />
+              UNIQUE(ledger_id, kind, name)
+              <br />
+              UNIQUE(ledger_id, id, kind)
+            </p>
+            <small
+              >每个账本初始化默认分类；记账时可动态新增分类并选择图标，双方共享，收支类型分别去重。icon
+              保存白名单标识，由统一 SVG 组件显示。归档后不可用于新账单，历史关联继续保留。</small
+            >
+          </article>
+          <article class="entity">
+            <h3>EntryTemplate / 我的常用模板</h3>
+            <p>
+              id UUID · ledger_id · user_id<br />name · kind · amount_minor · currency_code<br />category_id
+              · paid_by_member_id · note<br />created_at · updated_at<br />UNIQUE(ledger_id,
+              user_id, name)
+            </p>
+            <small
+              >模板只对创建它的用户可见。同账本复合外键约束分类、付款成员和币种；user_id
+              取登录会话。模板不存日期，使用时填入今天并由用户确认记账；增改删模板不改变历史账单。</small
+            >
+          </article>
+          <article class="entity" style="border-color: #b9c1ae; background: var(--sage)">
+            <h3>Entry / 收支记录</h3>
+            <p>
+              id UUID · ledger_id
+              <br />
+              kind: expense | income
+              <br />
+              amount_minor INTEGER &gt; 0
+              <br />
+              currency_code · category_id · note
+              <br />
+              paid_by_member_id → Membership
+              <br />
+              occurred_on: YYYY-MM-DD
+              <br />
+              created_by / updated_by → User
+              <br />
+              version INTEGER DEFAULT 1
+              <br />
+              created_at · updated_at
+              <br />
+              deleted_at · deleted_by<br />delete_reason · delete_reason_note
+            </p>
+            <small
+              >金额存货币最小单位，CNY
+              为分。付款人来自成员关系，创建人与修改人来自服务端登录身份。</small
+            >
+          </article>
+          <article class="entity">
+            <h3>MutationRequest / 防重复提交</h3>
+            <p>
+              ledger_id · actor_id · request_id
+              <br />
+              operation · payload_hash
+              <br />
+              result_entry_id · created_at
+              <br />
+              UNIQUE(ledger_id, actor_id, request_id)
+            </p>
+            <small
+              >操作类型纳入请求指纹；幂等记录与账单同事务提交。重复请求不新增账单，内容不同则返回冲突。</small
+            >
+          </article>
+        </div>
+        <p class="legend">
+          实体主键使用稳定 UUID，在 SQLite 中存为 TEXT；业务可变名称不做主键。个人模板通过 0002
+          增量迁移加入，保留既有分类和账单。UI 默认展示当前账本与当前用户的模板。
+        </p>
+        <h2 class="section-title">身份与邀请 · 与财务数据分开</h2>
+        <div class="details-grid">
+          <article class="entity">
+            <h3>Session / 会话</h3>
+            <p>
+              token_hash UNIQUE · user_id → User
+              <br />
+              expires_at · created_at
+            </p>
+            <small
+              >会话没有固定 ledger_id：每次访问按目标账本验证成员。Cookie 使用
+              HttpOnly、Secure、SameSite。</small
+            >
+          </article>
+          <article class="entity">
+            <h3>Invite / 邀请</h3>
+            <p>
+              id UUID · ledger_id · created_by
+              <br />
+              token_hash UNIQUE · target_role
+              <br />
+              expires_at · consumed_at · consumed_by
+              <br />
+              revoked_at
+            </p>
+            <small
+              >第一期邀请
+              editor；接受邀请时在事务内校验有效期、名额和权限，不给「对象」单独设计一列。</small
+            >
+          </article>
+        </div>
+        <h2 class="section-title">必须守住的约束</h2>
+        <div class="details-grid">
+          <div class="panel">
+            <h3 class="panel-title">数据库保证关联正确</h3>
+            <ul class="list-clean">
+              <li>
+                <b>同账本付款人：</b>
+                Entry(ledger_id, paid_by_member_id) → Membership(ledger_id, id)。
+              </li>
+              <li>
+                <b>同账本、同类型分类：</b>
+                Entry(ledger_id, category_id, kind) → Category(ledger_id, id, kind)。
+              </li>
+              <li>
+                <b>明确外键：</b>
+                用户、账本、审计人和幂等结果均有外键；MutationRequest
+                的结果使用同账本复合外键，Entry 增加 UNIQUE(ledger_id, id)。
+              </li>
+              <li>
+                <b>不级联抹除财务历史：</b>
+                核心引用 ON DELETE
+                RESTRICT；用户停用、成员退出、分类归档、账单软删除分别表达不同状态。
+              </li>
+              <li>
+                <b>金额与版本：</b>
+                CHECK amount_minor &gt; 0，CHECK version &gt;= 1，kind 限定 income /
+                expense；服务端验证安全整数及金额上限。
+              </li>
+              <li>
+                <b>SQLite：</b>
+                采用 STRICT 表约束金额的 INTEGER 类型；每个连接开启 foreign_keys；启用
+                WAL，不能仅声明外键而忘记启用检查。
+              </li>
+            </ul>
+          </div>
+          <div class="panel">
+            <h3 class="panel-title">服务端保证业务含义</h3>
+            <ul class="list-clean">
+              <li>
+                写入时验证成员未退出、具备编辑权限，付款成员有效；新建或更换分类时只能选择未归档分类。
+              </li>
+              <li>编辑历史账单的其他字段时允许保留已归档分类 / 已退出付款人，避免旧账无法维护。</li>
+              <li>
+                所有者必须为有效 editor；退出或转移所有权在事务内校验，不能出现无人管理的账本。
+              </li>
+              <li>
+                第一期同账本只允许
+                CNY：账单币种与账本一致；有账单后禁止直接改变账本币种，避免旧金额被重新解释。
+              </li>
+              <li>修改条件包含 ledger_id、id、version；冲突返回 409。账本归档后禁止新增和编辑。</li>
+              <li>
+                分类重命名会更新历史账单显示名称，金额不变；引用中的分类不允许改变收支类型。删除有引用的分类必须改为归档。
+              </li>
+            </ul>
+          </div>
+        </div>
+        <h2 class="section-title">扩展路线 · 功能需要时再迁移</h2>
+        <div class="entity-grid">
+          <article class="entity">
+            <h3>多人 / 多账本</h3>
+            <p>复用 Ledger + Membership</p>
+            <small
+              >调整人数政策并增加账本切换界面即可；所有查询始终以 ledger_id 隔离，不新增
+              third_user_id 之类字段。</small
+            >
+          </article>
+          <article class="entity">
+            <h3>资金账户 / 转账</h3>
+            <p>
+              新增 Account、Transfer
+              <br />
+              Entry 增加可空 account_id
+            </p>
+            <small
+              >付款人不等于银行卡或钱包。转账独立记录来源 /
+              目标账户及金额，两端变动原子提交，不进入收入支出统计。</small
+            >
+          </article>
+          <article class="entity">
+            <h3>退款 / 分次退款</h3>
+            <p>新增 Refund → original_entry_id</p>
+            <small
+              >保留原支出，一笔支出关联多次退款。同账本、同币种、累计不超过可退金额；按退款发生月冲减净支出，不记成收入。</small
+            >
+          </article>
+          <article class="entity">
+            <h3>标签 / 附件</h3>
+            <p>
+              Tag + EntryTag
+              <br />
+              Attachment → entry_id
+            </p>
+            <small
+              >多对多关系与独立附件表，均带账本范围约束；不把标签拼成逗号字符串，也不增加 photo1 /
+              photo2 列。</small
+            >
+          </article>
+          <article class="entity">
+            <h3>多币种</h3>
+            <p>增加汇率、折算金额和精度约束</p>
+            <small
+              >现有 amount_minor + currency_code
+              可保留原币金额；必须新增发生时汇率与本位币折算口径，不能直接混加不同币种。</small
+            >
+          </article>
+          <article class="entity">
+            <h3>历史审计 / 数据导入</h3>
+            <p>EntryRevision · ImportBatch</p>
+            <small
+              >需要完整修改历史时追加版本表；导入时增加来源与去重约束。目前只保留原始创建人与最后修改人，不提前建立空扩展表。</small
+            >
+          </article>
+        </div>
+        <div class="review-callout">
+          扩展性来自稳定的实体关系、外键和迁移路径。金额、分类、成员关系不塞进通用
+          JSON；首期不建立复杂记账分录引擎或通用 EAV 属性系统。
+        </div>
+        <div class="details-grid">
+          <div class="panel">
+            <h3 class="panel-title">索引与统计口径</h3>
+            <ul class="list-clean">
+              <li>
+                活动账单索引：Entry(ledger_id, occurred_on DESC, id DESC) WHERE deleted_at IS
+                NULL，支持月份查询和稳定游标分页。
+              </li>
+              <li>
+                Membership(user_id, left_at) 支持查找我的账本；Category(ledger_id, kind,
+                archived_at, sort_order) 支持选择分类。
+              </li>
+              <li>
+                分类 / 付款人复合索引按查询计划再加；第一期用 SQL 聚合，不维护容易失步的余额缓存。
+              </li>
+              <li>
+                本月结余 = 收入 − 支出，不是银行余额。付款统计按
+                paid_by_member_id；业务日期按账本时区，审计时间用 UTC。
+              </li>
+            </ul>
+          </div>
+          <div class="panel">
+            <h3 class="panel-title">可演进，但每一步可验证</h3>
+            <ul class="list-clean">
+              <li>
+                Drizzle 版本化迁移；新增字段先可空 / 带默认值，回填后收紧约束；SQLite
+                需要重建表时明确验证外键和索引。
+              </li>
+              <li>
+                迁移前备份，在数据库副本演练；验证行数、各账本收支合计和
+                foreign_key_check，再升级生产库。
+              </li>
+              <li>
+                未来切换 PostgreSQL 时保留
+                UUID、金额最小单位和实体边界；驱动、SQL、约束及迁移仍需专项适配，不承诺零修改。
+              </li>
+              <li>本轮只更新设计；自定义分类、退款、账户、多人 UI 的交付范围仍由后续评审决定。</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+      <footer class="review-footer">
+        <span>数据设计评审 · 正式结构以 migrations 为准</span
+        ><a href="architecture.html">← 返回架构</a>
+      </footer>
+    </main>
+  </body>
+</html>

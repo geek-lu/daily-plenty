@@ -1,0 +1,10 @@
+# [INPUT]: DAILY_PLENTY_DOMAIN、Next.js standalone 进程。[OUTPUT]: HTTPS 反向代理。[POS]: ECS 部署配置。
+# [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
+{$DAILY_PLENTY_DOMAIN} {
+  encode zstd gzip
+  reverse_proxy 127.0.0.1:3000
+  header {
+    -Server
+    Strict-Transport-Security "max-age=31536000"
+  }
+}

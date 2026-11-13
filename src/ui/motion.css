@@ -1,0 +1,73 @@
+/* [INPUT]: React 显隐状态与系统动态效果偏好。[OUTPUT]: 统一时长、淡入退出、无需测量的高度展开。
+ * [POS]: 公共动效令牌，业务 CSS 只定义目标样式。
+ * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
+:root {
+  --motion-fast: 180ms;
+  --motion-base: 240ms;
+  --motion-page: 280ms;
+  --motion-exit: 180ms;
+  --motion-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.motion-presence,
+.motion-enter {
+  animation: ui-fade-in var(--motion-base) var(--motion-ease);
+}
+.motion-presence[data-state='exiting'] {
+  animation: ui-fade-out var(--motion-exit) ease-in both;
+  pointer-events: none;
+}
+.motion-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    grid-template-rows var(--motion-base) var(--motion-ease),
+    opacity var(--motion-fast) ease-out,
+    visibility 0s var(--motion-base);
+}
+.motion-collapse[data-open='true'] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+.motion-collapse > div {
+  min-height: 0;
+  overflow: hidden;
+}
+button,
+a,
+input,
+select,
+textarea {
+  transition:
+    color var(--motion-fast) ease-out,
+    background-color var(--motion-fast) ease-out,
+    border-color var(--motion-fast) ease-out;
+}
+@keyframes ui-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes ui-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
