@@ -1,0 +1,78 @@
+/* [INPUT]: MUJI 令牌、pc/shell 版式与头像样式。[OUTPUT]: PC 我们页整屏两栏（各自限高、超出卡内滚动）、横排成员卡、邀请行与账号列表。
+ * [POS]: pc/together 专属样式；头像圆形样式与手机共用 common/together/avatar.css。
+ * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
+.pc-together {
+  display: grid;
+  flex: 1 1 auto;
+  grid-template-columns: minmax(0, 1.5fr) minmax(300px, 1fr);
+  gap: 24px;
+  align-items: start;
+  min-height: 0;
+}
+.pc-together > .pc-panel-fill {
+  max-height: 100%;
+}
+.pc-together-side {
+  max-height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.pc-together-side > .pc-panel + section {
+  margin-top: 24px;
+}
+.pc-together-people {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.pc-together-person {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+}
+.pc-together-person .together-avatar {
+  margin: 0;
+  flex-shrink: 0;
+}
+.pc-together-invite {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 8px 12px;
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+}
+.pc-together-invite > p {
+  grid-column: 1 / -1;
+}
+.pc-together-note {
+  margin-top: 24px;
+  border-top: 1px solid var(--color-line);
+  padding-top: 16px;
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--color-muted);
+}
+.pc-together-account > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid var(--color-line);
+  padding-block: 12px;
+  font-size: 14px;
+}
+.pc-together-account dt {
+  flex-shrink: 0;
+  color: var(--color-muted);
+}
+.pc-together-account dd {
+  overflow-wrap: anywhere;
+  text-align: right;
+}

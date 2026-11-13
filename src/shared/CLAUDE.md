@@ -15,4 +15,6 @@
 RecordsFilters / RecordsData / FormState 为独立账单页与复用弹层契约；recordsInput 校验日期区间、多分类、付款/录入人、整数分金额、排序和页码。
 ReportFilters / ReportPoint / ReportData 约定同一范围的完整汇总与支出序列；reportInput 按维度严格校验月份/年份，年维度不接受单个 period。
 
+EntryComment 定义 id、entryId、authorId、authorName、rootId、replyToId、replyToName、content、createdAt；主评论的三个回复字段为 null。
+
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md

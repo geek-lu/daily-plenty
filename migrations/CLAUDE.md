@@ -15,4 +15,6 @@
 
 - 0006_deletion_reasons.sql：为账单增加删除原因和说明字段；旧删除记录保留 NULL。
 
+- 0007_entry_comments.sql：新增 entry_comments，复合外键限制同账本/账单及作者成员，回复关联与时间索引；保留既有账单。
+
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md

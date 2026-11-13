@@ -1,6 +1,6 @@
 /**
  * [INPUT]: ledger 服务及 HTTP 解析/认证契约。
- * [OUTPUT]: 账本、查询、分类、模板、邀请和账单路由表。
+ * [OUTPUT]: 账本、查询、分类、模板、邀请、账单和评论路由表。
  * [POS]: server/http 账本适配；会话只解析一次，权限统一由服务层校验。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
@@ -8,6 +8,7 @@ import { atomic } from '../db/client';
 import { setupInput } from '@/shared/validation';
 import * as ledger from '../ledger/service';
 import * as entries from '../ledger/entries';
+import * as comments from '../ledger/comments';
 import * as invites from '../ledger/invitations';
 import * as preferences from '../ledger/preferences';
 import { queryRecords, exportRecords } from '../ledger/records';
@@ -15,6 +16,23 @@ import { json, text } from './context';
 import { authenticated, body, type Route } from './request';
 
 export const ledgerRoutes: Route[] = [
+  {
+    method: 'GET',
+    path: 'ledgers/:ledgerId/entries/:id/comments',
+    handle: authenticated(({ store, userId, params }) =>
+      json({ comments: comments.listComments(store, userId, params.ledgerId, params.id) }),
+    ),
+  },
+  {
+    method: 'POST',
+    path: 'ledgers/:ledgerId/entries/:id/comments',
+    handle: authenticated(async ({ store, userId, params, request }) =>
+      json(
+        comments.createComment(store, userId, params.ledgerId, params.id, await body(request)),
+        201,
+      ),
+    ),
+  },
   {
     method: 'GET',
     path: 'ledgers',

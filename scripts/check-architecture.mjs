@@ -1,6 +1,6 @@
 /**
  * [INPUT]: src 的 TypeScript AST、目录地图与工程配置。
- * [OUTPUT]: 模块边界、循环依赖、文件契约和控制流格式检查结果。
+ * [OUTPUT]: 模块边界（含 features 的 common/pc/m 隔离）、循环依赖、文件契约和控制流格式检查结果。
  * [POS]: 本地架构检查；使用现有 TypeScript，无额外运行依赖。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
@@ -50,6 +50,12 @@ for (const file of files) {
           report(file, 'shared 不得依赖运行时或 UI');
         if (file.startsWith('ui/') && /^(features|app)\//.test(imported))
           report(file, '公共 UI 不得依赖业务页面');
+        if (file.startsWith('features/common/') && /^features\/(pc|m)\//.test(imported))
+          report(file, 'features/common 不得依赖 pc/ 或 m/ 视图');
+        if (file.startsWith('features/pc/') && imported.startsWith('features/m/'))
+          report(file, 'pc/ 与 m/ 视图互不导入');
+        if (file.startsWith('features/m/') && imported.startsWith('features/pc/'))
+          report(file, 'pc/ 与 m/ 视图互不导入');
         if (!node.importClause?.isTypeOnly && /\.tsx?$/.test(target)) imports.push(target);
       }
       if (file.startsWith('server/') && (name === 'react' || name.startsWith('@/features/')))

@@ -21,12 +21,16 @@ DELETE /api/ledgers/:id/entries/:entryId 必须传 reason（duplicate / wrong_am
 - (main)/records/page.tsx：独立全部账单入口，支持地址保存筛选。
   GET /api/ledgers/:id/entries 为高级分页查询；GET /api/ledgers/:id/entries/export 导出全部匹配项；两者共享 start/end、kind、categoryIds（逗号分隔）、memberId、creatorId、minAmount/maxAmount（整数分）、search、sort、page。旧首页月度接口保留。
 
-globals.css 提供键盘自适应弹层、移动账单行、16px 原生表单与 Safari 日期控件；records 页面样式集中于 features/records/records.css。
+globals.css 提供键盘自适应弹层、移动账单行、16px 原生表单与 Safari 日期控件；明细页样式分别位于 features/m/records 与 features/pc/records。
 根元素 touch-action 仅允许横向/纵向平移，配合 viewport 与 TouchGestures 禁用页面双指缩放；不拦截单指移动、点击或桌面滚轮。
 
-globals.css 提供 BottomDrawer 的底部开关动画与 reduced-motion 回退；取消按钮按下的 translateY 位移。共用主 layout 的加载占位不渲染底栏与记账按钮，避免认证前闪现业务导航。
+globals.css 提供 BottomDrawer 的底部开关动画、PC（≥1024px）右侧滑出面板与 reduced-motion 回退；取消按钮按下的 translateY 位移。共用主 layout 的加载占位不渲染底栏与记账按钮，避免认证前闪现业务导航。
 globals.css 导入 ui/motion.css；CSS :has 根据弹层存在性锁住背景，scrollbar-gutter 预留滚动条，视口变量由 React style 输入。join 账号字段通过 Collapse 展开，成功状态淡入。
 
 - manifest.ts：生成 /manifest.webmanifest，中文名称、独立窗口、根启动地址与标准/遮罩图标；layout.tsx 提供 Apple 图标、通用/旧 Safari 独立窗口标记和安装 Provider。
+
+globals.css 的 side-drawer 为手机筛选提供全高右滑样式，其他抽屉保持原有布局。
+
+全局主题收敛为纸色页面、米白卡片/导航、墨灰文字和少量暗红；绿色仅用于收入/结余语义，基础控件统一消费颜色令牌。
 
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md

@@ -1,0 +1,188 @@
+/* [INPUT]: MUJI 令牌。[OUTPUT]: 分组筛选字段、分段收支、快捷日期选中态、分类多选与下拉加载尾部。
+ * [POS]: common/records 样式；手机筛选面板与 PC 筛选侧栏共用，容器宽度由各端决定。
+ * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
+.records-filter-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px 12px;
+}
+.records-filter-grid > label {
+  min-width: 0;
+}
+.records-category-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.records-category-option {
+  display: flex;
+  min-width: 0;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--color-line);
+  border-radius: 5px;
+  padding: 8px;
+  font-size: 13px;
+}
+.records-category-option[aria-pressed='true'] {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+.records-category-option span {
+  overflow-wrap: anywhere;
+}
+.records-load-more {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  margin-top: 20px;
+  border-top: 1px solid var(--color-line);
+  padding-top: 16px;
+  text-align: center;
+}
+@media (min-width: 400px) {
+  .records-filter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 480px) {
+  .records-category-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+/* ---- 窄容器（PC 筛选侧栏）固定两列，避免随视口变宽 ---- */
+.records-filter-narrow .records-filter-grid,
+.records-filter-narrow .records-category-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+/* ---- 筛选分组：纸色控件、细线层次与朱红选中反馈 ---- */
+.filter-section {
+  min-width: 0;
+  margin: 0;
+  padding: 20px 0;
+  border: 0;
+  border-bottom: 1px solid var(--color-line);
+}
+.filter-section:first-child {
+  padding-top: 0;
+}
+.filter-section:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.filter-section-title {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.filter-section-title > span {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--color-muted);
+}
+fieldset.filter-section {
+  padding-top: 20px;
+}
+fieldset.filter-section > legend {
+  float: left;
+}
+fieldset.filter-section > .records-category-grid {
+  clear: both;
+}
+.filter-section .label {
+  margin-bottom: 7px;
+  font-size: 12px;
+  color: var(--color-muted);
+}
+.filter-section .field {
+  width: 100%;
+  min-width: 0;
+  border-radius: 6px;
+  background-color: var(--color-paper);
+}
+.filter-section .field:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+.records-filter-grid.filter-single {
+  grid-template-columns: minmax(0, 1fr);
+}
+.filter-kind {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 16px;
+  border: 1px solid var(--color-line);
+  border-radius: 7px;
+  background: var(--color-paper);
+}
+.filter-kind button {
+  min-height: 40px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+.filter-kind button[aria-pressed='true'] {
+  background: var(--color-surface);
+  color: var(--color-accent);
+  box-shadow: 0 1px 4px rgb(48 51 46 / 8%);
+  font-weight: 500;
+}
+.filter-date-presets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 12px;
+}
+.filter-date-presets .btn {
+  padding-inline: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.filter-date-presets .btn[aria-pressed='true'] {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+.filter-section .records-category-option {
+  justify-content: flex-start;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  background: var(--color-paper);
+}
+.filter-section .records-category-option[aria-pressed='true'] {
+  background: var(--color-accent-soft);
+  box-shadow: inset 0 0 0 1px var(--color-accent);
+}
+.filter-kind button:focus-visible,
+.records-category-option:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+.filter-panel-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.filter-panel-title h2 {
+  font-size: 16px;
+}
+.filter-panel-title > span {
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: var(--color-paper);
+  color: var(--color-muted);
+  font-size: 11px;
+}

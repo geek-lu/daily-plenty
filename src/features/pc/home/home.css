@@ -1,0 +1,55 @@
+/* [INPUT]: MUJI 令牌与 pc/shell 版式原子。[OUTPUT]: PC 首页指标下占满剩余高度的两栏：内部滚动的账单表格 + 内部滚动的模板/分类侧栏。
+ * [POS]: pc/home 专属样式；卡片、表格、指标条复用 pc/shell/pc-page.css。
+ * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
+.pc-page:has(.pc-home-grid) {
+  background: var(--color-paper);
+}
+.pc-home-grid > .pc-panel {
+  background: var(--color-surface);
+}
+.pc-home-month {
+  width: 168px;
+}
+.pc-home-grid {
+  display: grid;
+  flex: 1 1 auto;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 24px;
+  min-height: 0;
+}
+.pc-home-side {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.pc-home-side > * {
+  flex-shrink: 0;
+}
+.pc-home-categories {
+  display: grid;
+  gap: 12px;
+  font-size: 14px;
+}
+.pc-home-categories > li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+/* ---- 首页表格与侧栏并排，宽度有限时只保留日期/分类/备注/金额 ---- */
+@media (max-width: 1439px) {
+  .pc-home-grid .pc-col-creator {
+    display: none;
+  }
+}
+@media (max-width: 1279px) {
+  .pc-home-grid {
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 16px;
+  }
+  .pc-home-grid .pc-col-payer {
+    display: none;
+  }
+}

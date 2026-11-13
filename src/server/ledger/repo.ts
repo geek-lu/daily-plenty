@@ -166,9 +166,7 @@ export function listEntries(
         filters.search
           ? sql`instr(lower(${entries.note} || ' ' || ${categories.name}), lower(${filters.search})) > 0`
           : undefined,
-        cursorRowid !== undefined
-          ? sql`${entries}.rowid < ${cursorRowid}`
-          : undefined,
+        cursorRowid !== undefined ? sql`${entries}.rowid < ${cursorRowid}` : undefined,
       ),
     )
     .orderBy(sql`${entries}.rowid DESC`)

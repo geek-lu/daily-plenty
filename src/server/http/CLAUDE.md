@@ -10,4 +10,6 @@
 
 App Route → router → 路由表 → flows/service → repo。禁止在路由表复制权限和业务规则。
 
+评论路由 GET/POST ledgers/:ledgerId/entries/:id/comments：GET 200 {comments}，POST 201 返回 comment（含幂等重试）；400 输入/回复关联错误、401 未登录、403 权限不足、404 账单不存在或已删除、409 请求标识冲突。
+
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md

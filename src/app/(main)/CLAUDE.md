@@ -2,12 +2,12 @@
 
 > L2 | 父级: ../CLAUDE.md
 
-- layout.tsx：四个主路由共用的持久 Shell；Suspense 仅显示加载状态，底栏由 Shell 在认证就绪后渲染。
-- page.tsx：/ 装配 home/HomePage，日常记账。
-- reports/page.tsx：/reports 装配 reports/ReportsPage，收支分析。
-- records/page.tsx：/records 装配 records/RecordsPage，高级查账。
-- together/page.tsx：/together 装配 together/TogetherPage，成员与账号。
+- layout.tsx：持久 AppShell，注入 nav={{ pc: Sidebar, m: BottomBar }}；Suspense 仅显示加载状态。app 层是唯一同时导入 pc/ 与 m/ 的位置。
+- page.tsx：/ 首页。
+- reports/page.tsx：/reports 收支统计。
+- records/page.tsx：/records 全部账单。
+- together/page.tsx：/together 成员与账号。
 
-路由组名称不出现在 URL。四页真实目录隔离，底栏由 layout 唯一提供，不在各页重复挂载。
+每个 page.tsx 只用 Adaptive 二选一渲染 features/pc 或 features/m 的同名页面，路由与 URL 条件两端一致。
 
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md

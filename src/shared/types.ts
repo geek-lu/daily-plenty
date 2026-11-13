@@ -1,4 +1,4 @@
-/** [INPUT]: 无运行依赖。[OUTPUT]: 账单、日/月/年统计、筛选分页及共用录入表单契约。[POS]: L0 公共业务语言。
+/** [INPUT]: 无运行依赖。[OUTPUT]: 账单、评论、日/月/年统计、筛选分页及共用录入表单契约。[POS]: L0 公共业务语言。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
 export type Kind = 'expense' | 'income';
 export type User = { id: string; displayName: string; loginName: string };
@@ -45,6 +45,17 @@ export type Entry = {
   deletedAt: string | null;
   deleteReason: string | null;
   deleteReasonNote: string | null;
+};
+export type EntryComment = {
+  id: string;
+  entryId: string;
+  authorId: string;
+  authorName: string;
+  rootId: string | null;
+  replyToId: string | null;
+  replyToName: string | null;
+  content: string;
+  createdAt: string;
 };
 export type EntryInput = {
   kind: Kind;

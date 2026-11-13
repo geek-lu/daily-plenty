@@ -20,4 +20,7 @@
 
 - csv.ts：两个导出入口共用列顺序、金额字符串、CSV 引号转义和公式注入防护。
 
+- comments.ts：评论服务；活跃 editor 写、viewer 读，已删除账单禁止访问；trim 1–1000，回复永远归主评论，复用账本/用户/requestId 幂等事务。
+- comments-repo.ts：同账本/账单评论仓储，实时关联作者与回复对象姓名，createdAt + rowid 升序全量读取。
+
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md

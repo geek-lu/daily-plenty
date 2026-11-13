@@ -16,7 +16,7 @@
 
 PWA 的 public/ 图标、sw.js 和 offline.html 由 release.sh 现有 public 复制步骤带入发布目录；/sw.js 禁用 HTTP 缓存，手机完整安装需可信 HTTPS。
 
-根 Makefile → scripts/remote.sh → 现有 package/bootstrap/release，默认目标为用户 ECS；连接参数由环境传入，不保存密码。
+根 Makefile → scripts/remote.sh → 现有 package/bootstrap/release，默认目标为用户 ECS；连接参数由环境传入，不保存密码。deploy/update 均携带完整 migrations/（含 0007 评论表）；旧库先停写备份，新服务健康检查时自动迁移，失败不自动回滚数据，恢复边界见 README。
 
 原生编译使用独立 Python 3.11 与 Node 安装包自带头文件；准备阶段安装/检查，发布阶段再次预检并向服务用户的构建进程显式传入，避免使用系统 Python 3.6 或再次下载头文件。
 

@@ -151,6 +151,14 @@ ssh -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 \
 
 确认新版本正常后，可删除脚本输出的**本次 builds 子目录**。发布包、缓存和备份不会自动清理；定期查看 `df -h`、`du -sh /opt/daily-plenty/* /var/backups/daily-plenty`，至少保留当前版本、一个已知可用旧版本和对应备份。不要删除 `current`/`previous` 指向的 releases 子目录。
 
+### 账单评论表升级
+
+本次新增 `migrations/0007_entry_comments.sql`，已有服务器运行 `make update` 即可（工具链尚未准备好时用 `make deploy`）。两者都会打包完整 `migrations/`；`release.sh` 将全部 SQL 复制到 standalone 发布目录，不需要另行上传 SQL、手工建表或重新初始化账本。
+
+升级顺序为：构建及原生模块预检 → 停止旧服务和备份任务 → 对已有数据库生成一致性备份 → 切换 `current` → 新服务的健康检查访问 `/api/setup/status`，打开数据库并自动应用尚未执行的迁移。迁移按文件名排序、记录内容哈希，并在事务中执行；重复发布不会重复建评论表，已应用 SQL 不可修改。账单仍保留在原数据库，评论存入独立新表。首次部署没有旧库时跳过升级前备份，由新服务创建完整数据库。
+
+备份失败会中止切换，已有旧版本会尝试重新启动；切换后若启动或健康检查（包括迁移）失败，新服务停止并返回失败，保留旧发布包及 `pre-release-backup.txt` 指向的备份，不自动回滚数据库。按下节恢复时应配对旧发布包与升级前备份；恢复会丢失备份时点之后的账单和评论，不能把仅切回旧代码当作数据库回滚。评论上线后的日常备份仍覆盖整个 SQLite 数据库，无需新增备份任务。
+
 ## 6. 备份与恢复
 
 手工生成一致性备份：
@@ -223,6 +231,8 @@ pnpm check:routes
 ```
 
 公网 HTTP 改造已通过 37 项应用测试、9 项脚本测试、类型/架构/格式与 Shell 语法检查、生产构建，以及 HTTP/HTTPS 两种 Cookie 配置的真实 Next 路由检查（初始化、登录、邀请、记账与退出）。测试使用本机内存数据库或临时文件，不连接 ECS。
+
+评论迁移部署检查：`pnpm test:scripts` 的 9 项测试通过；真实 Makefile 配合模拟 SSH 执行打包/解压，确认 `make deploy` 与 `make update` 上传包内的 `0007_entry_comments.sql` 与源码逐字一致，并验证上传、准备和发布失败中止。部署 Shell 语法及所改部署文件格式检查通过。发布内的停写、备份、切换与启动顺序已检查源码；未在真实 systemd/Linux 环境演练评论迁移失败及恢复。
 
 本轮未登录你的 ECS，也没有执行 dnf、systemd、Swap 或公网配置。服务器部署、实际端口连通与两台手机访问仍需部署后确认。
 

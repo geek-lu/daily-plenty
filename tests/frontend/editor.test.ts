@@ -6,7 +6,7 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createEntryCommands } from '@/features/ledger/editor/commands';
+import { createEntryCommands } from '@/features/common/editor/commands';
 import {
   emptyForm,
   entryForm,
@@ -14,13 +14,13 @@ import {
   templateForm,
   templateInput,
   nextForm,
-} from '@/features/ledger/editor/form';
+} from '@/features/common/editor/form';
 import { createStore, atomic } from '@/server/db/client';
 import * as users from '@/server/user/service';
 import * as ledgers from '@/server/ledger/service';
 import * as entries from '@/server/ledger/entries';
 import type { Entry } from '@/shared/types';
-import { uid } from '@/features/ledger/api';
+import { uid } from '@/features/common/api';
 
 test('HTTP browsers without randomUUID can still create valid distinct request IDs', (t) => {
   const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'crypto')!;

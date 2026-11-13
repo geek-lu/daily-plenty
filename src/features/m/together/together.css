@@ -1,0 +1,56 @@
+/* [INPUT]: MUJI 令牌与共用页面间距。[OUTPUT]: 头像文字双向居中的小家页与账号列表。
+ * [POS]: m/together 手机样式；头像在 common/together/avatar.css。
+ * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
+.together-page {
+  max-width: 720px;
+}
+.together-heading {
+  padding-block: 12px 28px;
+  text-align: center;
+}
+.together-home {
+  padding: 20px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+}
+.together-people {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  padding-block: 32px;
+}
+.together-person {
+  min-width: 0;
+  text-align: center;
+}
+.together-account {
+  padding-block: 28px;
+}
+.together-account dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid var(--color-line);
+  padding-block: 16px;
+  font-size: 14px;
+}
+.together-account dt {
+  flex-shrink: 0;
+  color: var(--color-muted);
+}
+.together-account dd {
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+.together-note {
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.9;
+  color: var(--color-muted);
+}
+@media (min-width: 480px) {
+  .together-home {
+    padding: 28px;
+  }
+}

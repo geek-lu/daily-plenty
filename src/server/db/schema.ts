@@ -1,4 +1,4 @@
-/** [INPUT]: Drizzle SQLite 列定义。[OUTPUT]: 类型化数据表（分类含持久化图标、账单含删除原因）。[POS]: 仓储共享的数据定义，与 migrations 同步。
+/** [INPUT]: Drizzle SQLite 列定义。[OUTPUT]: 类型化数据表（分类含持久化图标、账单含删除原因及评论回复关联）。[POS]: 仓储共享的数据定义，与 migrations 同步。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 import { sql } from 'drizzle-orm';
@@ -60,6 +60,16 @@ export const entries = sqliteTable('entries', {
   deletedBy: text('deleted_by'),
   deleteReason: text('delete_reason'),
   deleteReasonNote: text('delete_reason_note'),
+});
+export const entryComments = sqliteTable('entry_comments', {
+  id: text('id').primaryKey(),
+  ledgerId: text('ledger_id').notNull(),
+  entryId: text('entry_id').notNull(),
+  authorId: text('author_id').notNull(),
+  rootId: text('root_id'),
+  replyToId: text('reply_to_id'),
+  content: text('content').notNull(),
+  createdAt: timestamp('created_at'),
 });
 export const entryTemplates = sqliteTable('entry_templates', {
   id: text('id').primaryKey(),

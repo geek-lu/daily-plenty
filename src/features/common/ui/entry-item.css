@@ -1,0 +1,311 @@
+/* [INPUT]: MUJI 颜色令牌。[OUTPUT]: 自适应账单主行、灰底折叠工具栏与纸色讨论区。
+ * [POS]: common/ui 两端共享列表排版，不影响页面滚动边界。
+ * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
+.entry-item {
+  min-width: 0;
+  border-bottom: 1px solid var(--color-line);
+}
+/* ---- PC 留白：主行内容不贴悬停背景，评论与主行保持独立 ---- */
+.app-shell[data-device='pc'] .entry-item {
+  padding: 12px 0;
+}
+.app-shell[data-device='pc'] .entry-item-main {
+  padding: 16px;
+  border-radius: 5px;
+}
+.app-shell[data-device='pc'] .entry-comment-board {
+  margin: 10px 16px 4px 50px;
+}
+.entry-item-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.entry-item-main {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px 0;
+  text-align: left;
+}
+.entry-item-icon {
+  flex-shrink: 0;
+  color: var(--color-muted);
+}
+.entry-item-copy {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  gap: 3px;
+}
+.entry-item-title {
+  overflow-wrap: anywhere;
+  font-size: 15px;
+  font-weight: 500;
+}
+.entry-item-note {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--color-muted);
+  overflow-wrap: anywhere;
+}
+.entry-item-meta {
+  font-size: 12px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.entry-item-amount {
+  flex-shrink: 0;
+  margin-left: auto;
+  text-align: right;
+  color: var(--color-accent);
+  font-size: 18px;
+  font-weight: 500;
+}
+.entry-item-comment {
+  flex-shrink: 0;
+  min-height: 34px;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: var(--color-muted);
+}
+.entry-item-main:focus-visible,
+.entry-item-comment:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+  border-radius: 4px;
+}
+.entry-item-comment:hover,
+.entry-item-comment[aria-expanded='true'] {
+  color: var(--color-accent);
+}
+.entry-item-comments:empty {
+  display: none;
+}
+.entry-comment-board {
+  margin: 0 0 8px 34px;
+  border: 0;
+  border-radius: 3px;
+  background: var(--color-paper);
+  font-family: inherit;
+  font-size: 12px;
+  overflow: hidden;
+}
+.entry-comment-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 10px;
+}
+.entry-comment-toggle {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding-block: 4px;
+  text-align: left;
+  font-size: 12px;
+  color: var(--color-muted);
+}
+.entry-comment-chevron {
+  width: 6px;
+  height: 6px;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: rotate(-45deg);
+}
+.entry-comment-toggle[aria-expanded='true'] .entry-comment-chevron {
+  transform: rotate(45deg);
+}
+.entry-comment-toggle:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+.entry-item-comments .entry-discussion {
+  border: 0;
+  border-top: 1px solid var(--color-line);
+  border-radius: 0;
+}
+.entry-discussion {
+  padding: 0 10px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: var(--color-paper);
+}
+.entry-discussion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 30px;
+}
+.entry-discussion-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-muted);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: normal;
+}
+.entry-discussion-thread + .entry-discussion-thread {
+  border-top: 1px solid var(--color-line);
+}
+.entry-discussion-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+  padding: 6px 0;
+  overflow-wrap: anywhere;
+}
+.entry-discussion-content {
+  flex: 1;
+  min-width: 0;
+}
+.entry-discussion-byline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  line-height: 20px;
+}
+.entry-discussion-author {
+  color: var(--color-ink);
+  font-size: 12px;
+  font-weight: 500;
+}
+.entry-discussion-target {
+  color: var(--color-muted);
+  font-size: 11px;
+}
+.entry-discussion-text {
+  margin-top: 4px;
+  color: var(--color-ink);
+  font-size: 12px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+.entry-discussion-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+  color: var(--color-muted);
+  font-size: 11px;
+  line-height: 20px;
+}
+.entry-discussion-reply {
+  color: var(--color-accent);
+  font-size: 11px;
+}
+.entry-discussion-replies {
+  margin: 0 0 8px 0;
+  padding-left: 14px;
+  border-left: 1px solid var(--color-line);
+}
+.entry-discussion-replies .entry-discussion-message {
+  padding: 6px 0;
+}
+.entry-discussion-compose {
+  padding: 6px 0;
+}
+.entry-discussion-thread ~ .entry-discussion-compose {
+  border-top: 1px solid var(--color-line);
+}
+.entry-discussion-input {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.entry-comment-board .entry-discussion-input .field {
+  flex: 1;
+  width: 0;
+  min-width: 0;
+  height: 40px;
+  min-height: 40px;
+  max-height: 120px;
+  padding: 9px 10px;
+  line-height: 20px;
+  font-size: 12px;
+  resize: vertical;
+  background: var(--color-surface);
+}
+.entry-comment-board .entry-discussion-input .btn {
+  flex-shrink: 0;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+  color: var(--color-accent);
+  font-size: 12px;
+}
+@media (pointer: coarse) {
+  .entry-comment-board .entry-discussion-input .field {
+    font-size: 16px;
+  }
+}
+@media (max-width: 600px) {
+  .entry-item-heading {
+    gap: 4px;
+  }
+  .entry-item-main {
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+  .entry-item-amount {
+    grid-column: 3;
+    grid-row: 1;
+    align-self: center;
+    justify-self: end;
+  }
+  .entry-comment-board {
+    margin-left: 0;
+  }
+}
+
+/* ---- 数量是唯一朱红强调；工具栏与内容保持统一纸底 ---- */
+.entry-comment-toolbar {
+  background: var(--color-paper);
+}
+.entry-comment-toggle,
+.entry-comment-toolbar .entry-item-comment {
+  color: var(--color-muted);
+}
+.entry-comment-count {
+  color: var(--color-accent);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+}
+
+/* ---- 轻量交互：只动画内容和操作，不移动页面外壳及固定导航 ---- */
+.entry-comment-chevron {
+  transition: transform var(--motion-base) var(--motion-ease);
+}
+@media (hover: hover) {
+  .entry-item-main:hover:not(:disabled) {
+    background: var(--color-paper);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .entry-discussion-message,
+  .entry-discussion-compose {
+    animation: entry-content-arrive var(--motion-base) var(--motion-ease);
+  }
+}
+@keyframes entry-content-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

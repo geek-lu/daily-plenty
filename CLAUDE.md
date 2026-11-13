@@ -8,12 +8,11 @@
 daily-plenty/
 ├── src/
 │   ├── app/          四个业务路由、初始化/邀请入口、布局、薄 API 适配
-│   ├── features/     home / reports / records / together 独立页面
-│   │                 shell 共享会话导航，entry 全局抽屉，ledger 共用录入和数据能力
+│   ├── features/     common 逻辑与共用组件，pc 桌面侧边栏 + B 端四页，m 手机底栏 + 四页
 │   ├── server/       http 路由表 → flows 跨域协调 → user/auth/ledger 服务 → db
 │   ├── shared/       类型、金额、日期、分类图标、删除原因及输入校验
 │   └── ui/           声明式动效、触摸手势与浏览器下载适配
-├── migrations/       0001–0006 已发布迁移，禁止改动已应用 SQL 内容
+├── migrations/       0001–0006 已发布迁移，0007 账单评论增量迁移；禁止改动已应用 SQL 内容
 ├── tests/            服务/HTTP 回归，frontend/ 表单重试与导航回归
 ├── scripts/          迁移/备份/可选配置、架构和生产路由检查
 ├── deploy/           Alibaba Cloud Linux 3 发布、访问模式配置、systemd、备份
@@ -24,8 +23,8 @@ daily-plenty/
 
 ## 边界
 
-- 四页固定为 `/`、`/reports`、`/records`、`/together`。底栏属于共享布局，“记一笔”打开全局抽屉，不切页。MUJI 简约风格、手机安全区和键盘适配继续由现有样式负责。
-- UI → runtime → commands/api；金额、表单映射等纯规则不依赖 React。`ledger/editor` 共用表单、提交锁和请求身份，页面只协调开关、提示与刷新。
+- 四页固定为 `/`、`/reports`、`/records`、`/together`。≥1024px 渲染 features/pc（左侧边栏 + 右内容区、列表优先），否则渲染 features/m（底栏）；断点只在 common/session/Adaptive 定义。pc/ 与 m/ 只依赖 common/、互不导入，架构检查强制。“记一笔”打开全局抽屉（PC 为右侧面板），不切页。MUJI 简约风格。
+- UI（pc/ m/）→ common runtime → commands/api；金额、表单映射等纯规则不依赖 React。`common/editor` 共用表单、提交锁和请求身份，页面只协调开关、提示与刷新。
 - App API → http/router → account/ledger 路由表 → flows/service → repo → SQLite。HTTP 统一解析 JSON 和会话；服务重新校验权限与数据；跨 user/auth/ledger 的账号创建和邀请加入由 flows 协调事务。
 - User / Ledger / Membership 多对多；Category 属于账本，Template 属于用户和账本。查询不得泄露另一位成员的个人模板；历史关联与软删除保留财务数据。
 - 账单写入使用 requestId 幂等、version 防覆盖。失败的同内容请求重用编号，成功后开启新操作。删除必须记录原因，其他原因要求说明。
@@ -67,5 +66,13 @@ ACCESS_MODE 默认 http，传给 release 的 deploy/config/access.mjs；发布�
 Makefile 验证：7 项脚本测试通过，覆盖真实打包/解压、模拟 SSH、参数引用和各阶段失败中止；部署 Shell 语法检查通过。未连接真实 ECS，尚未验证服务器安装与发布。
 
 ECS 原生编译修复：bootstrap 安装独立 Python 3.11；release 显式使用该 Python 和 Node 安装包自带头文件，避免 node-gyp 重复联网下载。新增编译环境传递与缺失工具链预检回归；远端安装与真实 Linux 编译仍需重新执行 make deploy 验证。
+
+PC/手机分端：features 拆为 common/pc/m；PC 侧边栏、明细常驻筛选 + 表格、统计宽幅折线 + 三栏、首页表格 + 模板侧栏、我们页两栏，抽屉在 PC 为右侧面板。39 项应用测试、类型/架构/格式、生产构建与路由检查通过；临时库截图核对 1440px 与 390px，未在真实手机验证。
+
+2026-11-13 PC 样式：四页使用 100dvh 整屏布局，标题/指标固定，表格、筛选字段和侧栏内部滚动；明细无限加载观察内部容器，反馈改为浮动提示；小桌面压缩留白并隐藏表格次要列（详情仍完整）。 验证：39 项应用测试、类型/架构/格式、生产构建与路由检查通过；Chrome 临时数据验证四页在 1024×700、1280×800、1440×900、1920×1080 均无页面级滚动，表格内滚动加载 30→60→90 笔。未验证真实手机。
+
+2026-11-13 账单评论：common/comments 在两端首页与明细详情共用；主评论下一级平铺回复，保留直接回复对象，可持续交流。新增 0007 entry_comments 表，沿用账本权限与幂等请求；部署通过现有增量迁移升级，不修改历史 SQL。46 项应用测试、9 项脚本测试、类型/架构/格式、生产构建和路由检查通过；Chrome 1440px/390px 实际发布评论并连续回复成功。make deploy/update 打包均包含 0007；未执行远端部署。
+
+2026-11-13 列表交互：PC 首页/明细移除 EntryTable，PC 与手机复用 EntryRow；每项右侧评论按钮在下方展开评论和持续回复，编辑抽屉不再承载评论。PC 维持内部滚动与无限加载。
 
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md

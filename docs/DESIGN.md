@@ -8,7 +8,8 @@ MUJI 灵感：纸感米白、墨灰文字、暗红印章、小面积橄榄绿。
 ## 2. Color Palette & Roles
 
 背景 paper #f6f5f0；表面 surface #fffefa；文字 ink #30332e；次要 muted #72766a；边框 line #e3e3d9。
-品牌 accent #7c302f；品牌浅底 accent-soft #f3e9e5；收入 positive #52654b；绿色浅底 sage #edf0e7。
+品牌 accent #7f0019；品牌浅底 accent-soft #f7eff1；收入 positive #52654b；绿色浅底 sage #edf0e7。
+界面收敛为米白、墨灰和少量暗红；导航与卡片使用 surface，页面及评论用 paper。绿色仅用于收入/结余等语义，不用于导航装饰。以留白、细线和低色差传达自然材质的安静感，不铺木色大块或仿木纹。
 颜色辅助状态，收入/支出始终有文字和正负号，错误同时提供文字解释。
 
 ## 3. Typography Rules
@@ -65,8 +66,8 @@ MUJI 灵感：纸感米白、墨灰文字、暗红印章、小面积橄榄绿。
   --color-ink: #30332e;
   --color-muted: #72766a;
   --color-line: #e3e3d9;
-  --color-accent: #7c302f;
-  --color-accent-soft: #f3e9e5;
+  --color-accent: #7f0019;
+  --color-accent-soft: #f7eff1;
   --color-positive: #52654b;
   --color-sage: #edf0e7;
 }

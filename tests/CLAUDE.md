@@ -24,4 +24,6 @@
 navigation.test.ts 同时用真实 JSX runtime 遍历明细页已加载状态的兄弟元素，验证 key 唯一；还原旧写法确认回归测试能捕捉用户报告的重复 key。
 navigation.test.ts 验证 Collapse 的 inert/aria-hidden 与草稿保留、Presence 初始显隐，并扫描正式 features/ui 禁止手工增删节点、写 innerHTML/classList/style。
 
+- comments.test.ts：活跃成员/读写权限、跨账本/账单隔离、持续回复平铺、输入边界、幂等冲突与事务回滚、0007 旧库升级及重开、真实 HTTP router 契约回归。preferences.test.ts 迁移数量同步为 7。
+
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md

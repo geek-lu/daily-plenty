@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 真实 Makefile/remote.sh、临时目录与模拟 SSH/scp/系统命令。
- * [OUTPUT]: 部署顺序、参数引用、打包排除和失败中止回归。
+ * [OUTPUT]: 部署顺序、参数引用、评论迁移打包、打包排除和失败中止回归。
  * [POS]: 本机执行真实打包/解压，不连接服务器，不执行 bootstrap/release 的系统操作。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
@@ -102,6 +102,13 @@ function steps(records) {
   );
 }
 
+function assertCommentMigration(archive) {
+  const migration = 'migrations/0007_entry_comments.sql';
+  const result = spawnSync('tar', ['-xOzf', archive, `./${migration}`], { encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout, readFileSync(join(project, migration), 'utf8'));
+}
+
 test('plain make is help only; deployment transports quoted options and includes PWA without local data', (t) => {
   const state = fixture(t);
   const help = state.run();
@@ -138,6 +145,7 @@ test('plain make is help only; deployment transports quoted options and includes
   assert.equal(listing.status, 0, listing.stderr);
   assert.match(listing.stdout, /\.\/public\/sw\.js/);
   assert.match(listing.stdout, /\.\/Makefile/);
+  assertCommentMigration(state.archive);
   assert.doesNotMatch(
     listing.stdout,
     /^\.\/(?:\.env[^/]*|node_modules|data|backups|\.next(?:-build)?)(?:\/|$)/m,
@@ -148,6 +156,7 @@ test('updates skip bootstrap; first deployment can opt out of swap', (t) => {
   const update = fixture(t);
   const result = update.run('update');
   assert.equal(result.status, 0, result.stderr + result.stdout);
+  assertCommentMigration(update.archive);
   assert.deepEqual(
     steps(update.records()).map((item) => item.args[0]),
     ['deploy/scripts/release.sh'],

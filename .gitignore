@@ -9,3 +9,6 @@ backups/
 *.tsbuildinfo
 coverage/
 .DS_Store
+
+# 本地代码索引
+.codegraph/

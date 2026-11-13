@@ -1,11 +1,11 @@
-/** [INPUT]: 导航纯规则、共享布局、React SSR 与公共动效组件。[OUTPUT]: 认证前无底栏、导航隔离、唯一 key 和折叠可访问性回归。
+/** [INPUT]: 导航纯规则、共享布局、React SSR 与公共动效组件。[OUTPUT]: 认证前无导航、两端各注入一套导航、导航隔离、手机/PC 明细唯一 key 和折叠可访问性回归。
  * [POS]: 导航状态验证，不依赖浏览器或用户数据。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { tabs, tabHref } from '@/features/shell/navigation';
+import { tabs, tabHref } from '@/features/common/session/navigation';
 
-test('login/setup/loading hide business navigation; authenticated pages keep one bottom bar', async () => {
+test('login/setup/loading hide business navigation; ready shell injects exactly one nav per device', async () => {
   const { readFileSync } = await import('node:fs');
   const { runInNewContext } = await import('node:vm');
   const ts = await import('typescript');
@@ -13,33 +13,22 @@ test('login/setup/loading hide business navigation; authenticated pages keep one
   const jsx = await import('react/jsx-runtime');
   const { renderToStaticMarkup } = await import('react-dom/server');
   let mode = 'loading';
-  const exports: { default?: React.ComponentType<React.PropsWithChildren> } = {};
+  let desktop = false;
+  const exports: { default?: React.ComponentType<React.PropsWithChildren<{ nav: object }>> } = {};
   const source = readFileSync(
-    new URL('../../src/features/shell/AppShell.tsx', import.meta.url),
+    new URL('../../src/features/common/session/AppShell.tsx', import.meta.url),
     'utf8',
   );
   const imports: Record<string, unknown> = {
     react,
     'react/jsx-runtime': jsx,
-    'next/link': { default: (props: object) => react.createElement('a', props) },
-    'next/navigation': { usePathname: () => '/', useSearchParams: () => new URLSearchParams() },
-    '../ledger/ui/InterfaceIcon': { InterfaceIcon: () => null },
-    '../entry/EntryComposer': {
-      EntryComposerProvider: react.Fragment,
-      useEntryComposer: () => ({ canCreate: true, isOpen: false, openEntry: () => {} }),
-    },
+    '../entry/EntryComposer': { EntryComposerProvider: react.Fragment },
     './AuthView': { AuthView: () => react.createElement('main', null, '认证表单') },
     './runtime': {
       SessionProvider: react.Fragment,
-      useSession: () => ({
-        mode,
-        user: mode === 'ready' ? { id: 'user' } : null,
-        ledgerId: 'ledger',
-        error: '加载失败',
-        boot: () => {},
-      }),
+      useSession: () => ({ mode, error: '加载失败', boot: () => {} }),
     },
-    './navigation': { tabs, tabHref },
+    './Adaptive': { useIsDesktop: () => desktop },
     './shell.css': {},
   };
   runInNewContext(
@@ -48,32 +37,46 @@ test('login/setup/loading hide business navigation; authenticated pages keep one
     }).outputText,
     { exports, require: (name: string) => imports[name] },
   );
+  // 两端导航用带标记的替身；真实 Sidebar/BottomBar 共用 useTabLinks，链接规则见下一项测试。
+  const fakeNav = (device: string) =>
+    react.createElement(
+      'nav',
+      { 'aria-label': '主导航', 'data-nav': device },
+      react.createElement('button', { 'aria-label': '记一笔' }),
+      ...tabs.map((tab) => react.createElement('a', { key: tab.path }, tab.label)),
+    );
+  const nav = { pc: fakeNav('pc'), m: fakeNav('m') };
   const render = (child: React.ReactNode = react.createElement('main', null, '业务内容')) =>
-    renderToStaticMarkup(react.createElement(exports.default!, null, child));
-  for (const state of ['loading', 'login', 'setup', 'error', 'ready', 'login']) {
-    mode = state;
-    const html = render();
-    if (state === 'ready') {
-      assert.equal((html.match(/aria-label="主导航"/g) || []).length, 1);
-      assert.equal((html.match(/aria-label="记一笔"/g) || []).length, 1);
-      for (const tab of tabs) {
-        assert.ok(html.includes(tab.label));
+    renderToStaticMarkup(react.createElement(exports.default!, { nav }, child));
+  for (const device of [false, true]) {
+    desktop = device;
+    const expected = device ? 'pc' : 'm';
+    for (const state of ['loading', 'login', 'setup', 'error', 'ready', 'login']) {
+      mode = state;
+      const html = render();
+      assert.match(html, new RegExp(`data-device="${expected}"`));
+      if (state === 'ready') {
+        assert.equal((html.match(/aria-label="主导航"/g) || []).length, 1);
+        assert.equal((html.match(/aria-label="记一笔"/g) || []).length, 1);
+        assert.match(html, new RegExp(`data-nav="${expected}"`));
+        for (const tab of tabs) {
+          assert.ok(html.includes(tab.label));
+        }
+        assert.match(html, /data-ready="true"/);
+        assert.match(html, /业务内容/);
+      } else {
+        assert.doesNotMatch(html, /aria-label="主导航"|aria-label="记一笔"|业务内容/);
+        assert.match(html, /data-ready="false"/);
       }
-      assert.match(html, /data-ready="true"/);
-      assert.match(html, /业务内容/);
-    } else {
-      assert.doesNotMatch(html, /aria-label="主导航"|aria-label="记一笔"|业务内容/);
-      assert.match(html, /data-ready="false"/);
     }
+    mode = 'ready';
+    const PendingPage = () => {
+      throw new Promise(() => {});
+    };
+    const pending = render(react.createElement(PendingPage));
+    assert.match(pending, /正在打开页面/);
+    assert.equal((pending.match(/aria-label="主导航"/g) || []).length, 1);
   }
-  mode = 'ready';
-  const PendingPage = () => {
-    throw new Promise(() => {});
-  };
-  const pending = render(react.createElement(PendingPage));
-  assert.match(pending, /正在打开页面/);
-  assert.equal((pending.match(/aria-label="主导航"/g) || []).length, 1);
-  assert.equal((pending.match(/aria-label="记一笔"/g) || []).length, 1);
 });
 
 test('four independent destinations keep each ledger and page query separate', () => {
@@ -148,10 +151,12 @@ test('records page keeps filter and result identities distinct for the same quer
   const ts = await import('typescript');
   const jsx = await import('react/jsx-runtime');
   const { isValidElement } = await import('react');
-  const source = readFileSync(
-    new URL('../../src/features/records/RecordsPage.tsx', import.meta.url),
-    'utf8',
-  );
+  const read = (device: string) =>
+    readFileSync(
+      new URL(`../../src/features/${device}/records/RecordsPage.tsx`, import.meta.url),
+      'utf8',
+    );
+  const source = read('m');
   let state = {
     query: 'ledger=7936fca0-9a89-4877-b0e1-2384495553ca',
     filters: {},
@@ -176,7 +181,7 @@ test('records page keeps filter and result identities distinct for the same quer
         if (name === 'react/jsx-runtime') {
           return jsx;
         }
-        if (name === './runtime') {
+        if (name === '@/features/common/records/runtime') {
           return { useRecords: () => state };
         }
         // 子组件在此检查中只作为 React 元素，副作用不执行。
@@ -212,4 +217,6 @@ test('records page keeps filter and result identities distinct for the same quer
     .replace('key={`filters:${state.query}`}', 'key={state.query}')
     .replace('key={`results:${state.query}`}', 'key={state.query}');
   assert.throws(() => check(render(previous)), /duplicate sibling keys/);
+  // PC 版筛选栏与结果区分处两栏，同样不得出现重复 key。
+  check(render(read('pc')));
 });

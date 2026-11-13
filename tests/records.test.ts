@@ -13,8 +13,8 @@ import { createEntry, deleteOrRestore } from '@/server/ledger/entries';
 import { queryRecords, exportRecords } from '@/server/ledger/records';
 import { recordsInput, reportInput } from '@/shared/validation';
 import { completeReportPoints } from '@/shared/report';
-import { reportQuery, reportSelection } from '@/features/reports/filters';
-import { filterAmount, filterParams } from '@/features/records/filters';
+import { reportQuery, reportSelection } from '@/features/common/reports/filters';
+import { filterAmount, filterParams } from '@/features/common/records/filters';
 import type { EntryInput } from '@/shared/types';
 
 function fixture() {

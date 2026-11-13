@@ -315,7 +315,7 @@ test('migration upgrades existing data and templates survive database reopening'
     assert.equal(repo.entry(reopened, ledgerId, entry.id)?.amountMinor, 2500);
     assert.equal(
       (reopened.sqlite.prepare('SELECT count(*) n FROM _migrations').get() as { n: number }).n,
-      6,
+      7,
     );
   } finally {
     reopened.sqlite.close();

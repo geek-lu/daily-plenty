@@ -44,7 +44,8 @@ textarea {
   transition:
     color var(--motion-fast) ease-out,
     background-color var(--motion-fast) ease-out,
-    border-color var(--motion-fast) ease-out;
+    border-color var(--motion-fast) ease-out,
+    box-shadow var(--motion-fast) ease-out;
 }
 @keyframes ui-fade-in {
   from {
@@ -62,6 +63,21 @@ textarea {
     opacity: 0;
   }
 }
+
+/* ---- 按钮按压仅作用于独立操作，不缩放账单行与导航容器 ---- */
+@media (prefers-reduced-motion: no-preference) {
+  .btn {
+    transition:
+      background-color var(--motion-fast) ease-out,
+      border-color var(--motion-fast) ease-out,
+      color var(--motion-fast) ease-out,
+      transform var(--motion-fast) var(--motion-ease);
+  }
+  .btn:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

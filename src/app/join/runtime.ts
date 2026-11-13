@@ -7,7 +7,7 @@
  */
 import { useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { api } from '@/features/ledger/api';
+import { api } from '@/features/common/api';
 
 export function useJoin() {
   const token = useSearchParams().get('token') || '';

@@ -84,11 +84,7 @@ export function validateLinks(
 export function query(store: Store, actorId: string, ledgerId: string, raw: unknown) {
   const access = authorize(store, actorId, ledgerId);
   const filters = filterInput.parse(raw);
-  ensure(
-    !filters.cursor || /^\d+$/.test(filters.cursor),
-    400,
-    '分页标识无效',
-  );
+  ensure(!filters.cursor || /^\d+$/.test(filters.cursor), 400, '分页标识无效');
   const rows = repo.listEntries(store, ledgerId, filters, filters.cursor);
   const entries = rows.slice(0, 50);
   const last = entries.at(-1);

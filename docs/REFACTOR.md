@@ -26,7 +26,7 @@
 | 逻辑职责         | 实际路径                                                           |
 | ---------------- | ------------------------------------------------------------------ |
 | Types / rules    | shared、ledger/editor/form、records/filters、reports/filters       |
-| API / repository | features/ledger/api、server 各域 repo                              |
+| API / repository | features/common/api、server 各域 repo                              |
 | 业务流程         | ledger/editor/commands、server 各域 service、server/flows/accounts |
 | Runtime          | features 的 hooks/Provider、join/runtime、server/http              |
 | UI               | 四页组件、ledger/ui、ui 与 App 路由装配                            |

@@ -1,0 +1,27 @@
+/* [INPUT]: MUJI 令牌。[OUTPUT]: 姓名末字圆形头像与空位虚线头像。
+ * [POS]: common/together 共用样式；手机与 PC 我们页一致。
+ * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
+.together-avatar {
+  display: grid;
+  place-items: center;
+  line-height: 1;
+  width: 64px;
+  height: 64px;
+  margin-inline: auto;
+  border-radius: 50%;
+  background: #dfdfce;
+  color: var(--color-positive);
+  font-size: 28px;
+}
+.together-avatar-empty {
+  border: 1px dashed var(--color-muted);
+  background: transparent;
+  color: var(--color-muted);
+}
+@media (min-width: 480px) {
+  .together-avatar {
+    width: 76px;
+    height: 76px;
+    font-size: 32px;
+  }
+}

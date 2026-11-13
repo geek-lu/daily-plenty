@@ -13,4 +13,6 @@
 
 服务层不导入 React/Next；跨模块账户创建与邀请加入由 flows 协调，HTTP 只适配请求/响应。
 
+ledger/comments 提供账单评论与一级展示回复；HTTP 复用会话认证，写入与幂等结果同事务提交。
+
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md

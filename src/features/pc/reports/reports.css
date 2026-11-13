@@ -1,0 +1,88 @@
+/* [INPUT]: MUJI 令牌、pc/shell 版式与 common/reports 图表样式。
+ * [OUTPUT]: PC 统计页维度分段按钮、随视口伸缩的趋势卡与填满剩余高度的三栏汇总（卡内滚动）。
+ * [POS]: pc/reports 专属样式；在宽卡片内覆盖共用组件的手机边距。
+ * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
+.pc-reports-period {
+  width: 168px;
+}
+.pc-segmented {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  background: var(--color-surface);
+}
+.pc-segmented button {
+  min-width: 44px;
+  min-height: 32px;
+  border-radius: 4px;
+  color: var(--color-muted);
+  font-size: 14px;
+  transition:
+    background-color 150ms ease-out,
+    color 150ms ease-out;
+}
+.pc-segmented button[aria-pressed='true'] {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+.pc-reports-trend {
+  flex-shrink: 0;
+  padding-block: 16px 4px;
+}
+.pc-reports-trend .pc-panel-heading {
+  margin-bottom: 4px;
+}
+.pc-reports-trend .reports-point {
+  min-height: 40px;
+}
+/* ---- 折线高度 = 视口高度减去其余固定区块，下方三栏至少保留约 180px ---- */
+.pc-reports-trend .reports-plot,
+.pc-reports-trend .reports-y-axis {
+  height: clamp(96px, calc(100dvh - 660px), 220px);
+}
+.pc-reports-trend .reports-chart {
+  padding-bottom: 28px;
+}
+.pc-reports-trend .reports-chart-table {
+  margin-block: 0 8px;
+}
+.pc-reports-trend .reports-table-scroll {
+  max-height: 160px;
+}
+.pc-reports-grid {
+  display: grid;
+  flex: 1 1 auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 24px;
+  min-height: 0;
+}
+.pc-reports-members {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.pc-reports-members > .reports-members {
+  min-height: 100%;
+}
+/* ---- 共用汇总组件在卡片内使用紧凑排版 ---- */
+.pc-reports-grid .reports-overview {
+  grid-template-columns: 1fr;
+  gap: 20px;
+  padding-block: 0;
+}
+.pc-reports-grid .reports-main-number > .num {
+  font-size: 36px;
+}
+@media (max-width: 1199px) {
+  .pc-reports-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pc-segmented button {
+    transition: none;
+  }
+}

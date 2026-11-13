@@ -1,0 +1,255 @@
+/* [INPUT]: MUJI 令牌。[OUTPUT]: PC 页面骨架（默认自然滚动、fixed 明细页整屏）、标题栏、卡片与 fill 内部滚动、指标条、浮动提示、细滚动条与表格基础样式。
+ * [POS]: pc/shell 公共版式；各 PC 页面只追加自身网格，不重复定义卡片和表格。
+ * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
+.pc-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  max-width: 1440px;
+  margin-inline: auto;
+  padding: 28px 32px 24px;
+}
+/* ---- 仅明细页锁定整屏，其余页面内容自然撑高 ---- */
+.pc-page-fixed {
+  height: 100dvh;
+  overflow: hidden;
+}
+.pc-page:not(.pc-page-fixed) .pc-panel-body,
+.pc-page:not(.pc-page-fixed) .pc-scroll {
+  overflow: visible;
+  max-height: none;
+  scrollbar-gutter: auto;
+}
+.pc-page > .page-loading-status {
+  flex-shrink: 0;
+  min-height: 20px;
+  margin-block: 4px 8px;
+}
+/* ---- 主体占满剩余高度；各页网格在此内部分配，溢出只在卡片内滚动 ---- */
+.pc-page-body {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 0;
+}
+.pc-page-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+.pc-page-header h1 {
+  font-size: 28px;
+  line-height: 1.3;
+}
+.pc-page-subtitle {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+.pc-page-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.pc-page .btn {
+  min-height: 40px;
+  padding-block: 8px;
+  font-size: 14px;
+}
+.pc-page .field {
+  min-height: 40px;
+  padding-block: 8px;
+  font-size: 14px;
+}
+.pc-panel {
+  min-width: 0;
+  padding: 24px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: var(--color-surface);
+}
+.pc-panel-fill {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding-bottom: 0;
+}
+.pc-panel-fill > .pc-panel-heading {
+  flex-shrink: 0;
+}
+.pc-panel-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-inline: -24px;
+  padding: 0 24px 24px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+.pc-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.pc-panel-heading h2 {
+  font-size: 16px;
+}
+.pc-stats {
+  flex-shrink: 0;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: var(--color-surface);
+}
+.pc-stat {
+  min-width: 0;
+  padding: 16px 24px;
+  border-left: 1px solid var(--color-line);
+}
+.pc-stat:first-child {
+  border-left: 0;
+}
+.pc-stat-label {
+  font-size: 12px;
+  color: var(--color-muted);
+}
+.pc-stat-value {
+  margin-top: 6px;
+  font-size: 22px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+/* ---- 表格：用于明细与统计数据，行悬停提示可点击 ---- */
+.pc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.pc-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-line);
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font-size: 12px;
+  font-weight: 400;
+  text-align: left;
+  white-space: nowrap;
+}
+.pc-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--color-line);
+  vertical-align: middle;
+}
+.pc-table tbody tr {
+  cursor: pointer;
+  transition: background-color 120ms ease-out;
+}
+.pc-table tbody tr:hover,
+.pc-table tbody tr:focus-visible {
+  background: var(--color-paper);
+}
+.pc-table tbody tr:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+.pc-table .num-cell {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.pc-table .muted-cell {
+  color: var(--color-muted);
+  font-size: 13px;
+}
+.pc-table .pc-col-date {
+  white-space: nowrap;
+}
+.pc-cell-category {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.pc-cell-note {
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pc-empty {
+  padding: 56px 0;
+  text-align: center;
+  color: var(--color-muted);
+  font-size: 14px;
+}
+/* ---- 浮动提示：不参与布局流，避免出现时撑出滚动条 ---- */
+.pc-toast {
+  position: fixed;
+  z-index: 25;
+  right: 32px;
+  bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 420px;
+  padding: 12px 16px;
+  border: 1px solid #d6dccd;
+  border-radius: 6px;
+  background: var(--color-sage);
+  color: var(--color-positive);
+  font-size: 14px;
+  box-shadow: 0 8px 24px rgb(48 51 46 / 10%);
+}
+.pc-toast-close {
+  font-size: 18px;
+  line-height: 1;
+  color: var(--color-muted);
+}
+/* ---- 内部滚动条：细线、低对比，延续 MUJI 克制感 ---- */
+.pc-page :is(.pc-panel-body, .pc-scroll) {
+  scrollbar-width: thin;
+  scrollbar-color: #d4d4c8 transparent;
+}
+.pc-page :is(.pc-panel-body, .pc-scroll)::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.pc-page :is(.pc-panel-body, .pc-scroll)::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: #d4d4c8 padding-box;
+}
+.pc-page :is(.pc-panel-body, .pc-scroll)::-webkit-scrollbar-track {
+  background: transparent;
+}
+/* ---- 小桌面收紧留白；次要信息仍可在账单详情查看 ---- */
+@media (max-width: 1279px) {
+  .pc-page {
+    padding-inline: 20px;
+  }
+  .pc-stat {
+    padding: 14px 12px;
+  }
+  .pc-stat-value {
+    font-size: 18px;
+  }
+  .pc-table th,
+  .pc-table td {
+    padding-inline: 6px;
+  }
+  .pc-table .pc-col-note {
+    display: none;
+  }
+}

@@ -1,0 +1,66 @@
+/* [INPUT]: MUJI 令牌与 common/reports 图表样式。[OUTPUT]: 手机统计页标题、账本行、维度切换与趋势区外框。
+ * [POS]: m/reports 页面外框样式；图表、汇总等共用组件样式在 common/reports/reports-common.css。
+ * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
+.reports-heading {
+  display: grid;
+  align-items: end;
+  gap: 16px;
+}
+.reports-heading > label {
+  min-width: 0;
+}
+.reports-period-caption {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  color: var(--color-muted);
+  font-size: 13px;
+}
+.reports-ledger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  border-bottom: 1px solid var(--color-line);
+}
+.reports-ledger select {
+  max-width: 100%;
+}
+.reports-trend {
+  padding-top: 24px;
+  border-bottom: 1px solid var(--color-line);
+}
+.reports-trend-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.reports-granularity {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: var(--color-surface);
+}
+.reports-granularity button {
+  min-height: 44px;
+  min-width: 44px;
+  border-radius: 4px;
+  color: var(--color-muted);
+  transition:
+    background-color 200ms ease-out,
+    color 200ms ease-out;
+}
+.reports-granularity button[aria-pressed='true'] {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+@media (min-width: 480px) {
+  .reports-heading {
+    grid-template-columns: minmax(0, 1fr) 176px;
+  }
+}
