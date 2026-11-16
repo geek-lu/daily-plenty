@@ -9,6 +9,7 @@
 
 ```bash
 python3 scripts/query.py context --date today
+python3 scripts/recorders.py
 python3 scripts/query.py get --entry-id "$ENTRY_ID"
 python3 scripts/query.py list --input "$QUERY_FILE"
 python3 scripts/query.py reports --input "$REPORT_FILE"
@@ -19,6 +20,8 @@ JSON 输入也可用 `--input -` 从标准输入读取。地址/密钥来自宿�
 ## 候选与按 ID 查询
 
 `context` 返回 `ledger`、`occurredOn`、未归档 `categories`、未离开 `members`、有效 `recorders`；不输出已有账单或模板。`--date` 接受 today/yesterday/具体日期。分类取 `id`；付款人取 `members[].id`；录入/修改人取 `recorders[].memberId`。
+
+`recorders` 仅返回 `ledger` 和当前有效记账人列表，只发两个请求（账本 + recorders）；不需要分类或账单数据时用此代替 context。每项含 `memberId`、`userId`、`displayName`；录入/修改人从 `memberId` 匹配，`userId` 仅用于 creatorId 筛选。
 
 `get` 返回 `{entryId, version, entry}`，含 source、金额、日期、分类、付款/录入人；不存在或已删除返回 404。查询允许人工和 AI 记录，但修改只允许 AI。优先用上下文的确切 ID；列表匹配多条时不要擅自取第一条作为修改目标。
 

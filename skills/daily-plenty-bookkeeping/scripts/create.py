@@ -5,7 +5,7 @@
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 """
 import sys
-from _common import (INPUT_FIELDS, actor, context, member_id, mutation_main,
+from _common import (INPUT_FIELDS, resolve_recorder, context, member_id, mutation_main,
                      parse_fields, prepare_operation, require, run, validate_links)
 
 
@@ -15,7 +15,7 @@ def prepare(client, raw, path):
     require(fields - {"note"} <= set(raw), "请补全金额、日期、类型、分类、付款人和录入人")
     data = context(client, raw["occurredOn"])
     payload = parse_fields(raw, data["ledger"]["timezone"])
-    user_id = actor(data, raw["recordedByMemberId"])
+    user_id = resolve_recorder(data, raw["recordedByMemberId"])
     validate_links(data, payload)
     payload["recordedByMemberId"] = member_id(raw["recordedByMemberId"])
     return prepare_operation(client, path, "create", data["ledger"], payload,

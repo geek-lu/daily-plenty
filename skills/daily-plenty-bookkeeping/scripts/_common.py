@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """[INPUT]: 外部环境配置、结构化 JSON、HTTP API 和技能目录外的操作文件。
-[OUTPUT]: HTTP、字段校验、私有操作文件和新增/修改的幂等提交；明确返回 entryId/version。
+[OUTPUT]: HTTP、字段校验（含 member_or_all）、私有操作文件和新增/修改的幂等提交；
+          context 可接受已有账本跳过重复请求；resolve_recorder 返回录入/修改人 userId。
 [POS]: 独立 Python 3.9+ 标准库 CLI；不导入应用源码，不推断说话人身份。
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 """
@@ -113,8 +114,9 @@ def member_id(value):
         raise Failure("INVALID_INPUT", "账单、分类和成员必须使用实际响应的 UUID") from None
 
 
-def context(client, when):
-    ledger = client.ledger()
+def context(client, when, ledger=None):
+    if ledger is None:
+        ledger = client.ledger()
     day = occurred_on(when, ledger["timezone"])
     base = "ledgers/" + ledger["id"]
     data = client.request("GET", base + "/data?" + urlencode({"month": day[:7]}))
@@ -173,7 +175,13 @@ def parse_fields(raw, timezone):
             **{key: member_id(raw[key]) for key in ("categoryId", "paidByMemberId")}}
 
 
-def actor(data, member):
+def member_or_all(value):
+    if value == "all":
+        return "all"
+    return member_id(value)
+
+
+def resolve_recorder(data, member):
     selected = next((m for m in data["recorders"] if m["memberId"] == member_id(member)), None)
     require(selected is not None, "录入/修改人不在有效候选中，请重新匹配")
     return selected["userId"]

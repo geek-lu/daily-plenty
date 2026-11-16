@@ -5,7 +5,7 @@
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 """
 import sys
-from _common import (INPUT_FIELDS, actor, context, member_id, mutation_main,
+from _common import (INPUT_FIELDS, resolve_recorder, context, member_id, mutation_main,
                      parse_fields, prepare_operation, require, run, validate_links)
 
 
@@ -25,11 +25,11 @@ def prepare(client, raw, path, entry_id):
     minor = previous["amountMinor"]
     merged["amount"] = f"{minor // 100}.{minor % 100:02d}"
     merged.update({k: v for k, v in raw.items() if k in INPUT_FIELDS})
-    data = context(client, merged["occurredOn"])
+    data = context(client, merged["occurredOn"], ledger)
     require(data["ledger"]["id"] == ledger["id"], "准备期间账本发生变化")
     payload = parse_fields(merged, ledger["timezone"])
     validate_links(data, payload, previous)
-    user_id = actor(data, raw["updatedByMemberId"])
+    user_id = resolve_recorder(data, raw["updatedByMemberId"])
     payload.update(version=previous["version"], updatedByMemberId=member_id(raw["updatedByMemberId"]))
     return prepare_operation(client, path, "update", ledger, payload,
                              {"id": entry_id, "version": previous["version"] + 1, "source": "ai",

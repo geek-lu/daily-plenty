@@ -19,6 +19,7 @@ description: 通过日日有余 HTTP API 新增、修改和查询人民币账单
 | 记一笔实际收支                                | [新增](references/create.md) | `scripts/create.py` |
 | 修改刚创建或指定 ID 的 AI 账单                | [修改](references/update.md) | `scripts/update.py` |
 | 账本/成员候选、按 ID 核对、筛选明细、收支统计 | [查询](references/query.md)  | `scripts/query.py`  |
+| 仅获取有效记账人列表                          | [查询](references/query.md)  | `scripts/recorders.py` |
 
 写操作还需读一次 [提交与重试](references/commands.md)。仅排查接口时读 [HTTP 契约](HTTP.md)。
 

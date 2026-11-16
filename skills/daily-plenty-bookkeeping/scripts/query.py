@@ -5,9 +5,10 @@
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 """
 import argparse
+import re
 import sys
 from urllib.parse import urlencode
-from _common import Client, context, member_id, money, occurred_on, read_json, require, run
+from _common import Client, context, member_id, member_or_all, money, occurred_on, read_json, require, run
 
 
 def main():
@@ -42,9 +43,22 @@ def main():
         if "categoryIds" in query:
             require(isinstance(query["categoryIds"], list), "categoryIds 必须是分类 ID 数组")
             query["categoryIds"] = ",".join(member_id(value) for value in query["categoryIds"])
+        for key in ("memberId", "creatorId"):
+            if key in query:
+                query[key] = member_or_all(query[key])
         endpoint = "/entries"
     else:
         require(set(query) <= {"granularity", "period"}, "统计只接受 granularity 和 period")
+        require(query.get("granularity") in ("day", "month", "year"), "granularity 只能是 day、month 或 year")
+        period = query.get("period", "")
+        if query["granularity"] == "day":
+            require(isinstance(period, str) and re.fullmatch(r"20[0-9]{2}-[0-9]{2}", period),
+                    "日趋势需要 period=YYYY-MM")
+        elif query["granularity"] == "month":
+            require(isinstance(period, str) and re.fullmatch(r"20[0-9]{2}", period),
+                    "月趋势需要 period=YYYY")
+        else:
+            require("period" not in query, "年趋势不接受 period")
         endpoint = "/reports"
     return client.request("GET", base + endpoint + "?" + urlencode(query))
 
