@@ -248,9 +248,12 @@ test('0007 preserves existing entries and comments plus idempotency survive reop
   const sqlite = new Database(filename);
   sqlite.pragma('foreign_keys = ON');
   migrate(sqlite, dir);
+  // 当前仓储需要来源列；造好夹具后移除，验证实际历史库升级。
+  sqlite.exec("ALTER TABLE entries ADD COLUMN source TEXT NOT NULL DEFAULT 'manual'");
   const old: Store = { sqlite, db: drizzle(sqlite, { schema }) };
   const f = fixture(old);
   const before = sqlite.prepare('SELECT * FROM entries').all();
+  sqlite.exec('ALTER TABLE entries DROP COLUMN source');
   sqlite.close();
   const upgraded = createStore(filename);
   assert.deepEqual(upgraded.sqlite.prepare('SELECT * FROM entries').all(), before);
@@ -276,7 +279,7 @@ test('0007 preserves existing entries and comments plus idempotency survive reop
   assert.deepEqual(reopened.sqlite.pragma('foreign_key_check'), []);
   assert.equal(
     (reopened.sqlite.prepare('SELECT count(*) AS n FROM _migrations').get() as { n: number }).n,
-    7,
+    10,
   );
 });
 

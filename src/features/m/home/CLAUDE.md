@@ -2,7 +2,7 @@
 
 > L2 | 父级: ../CLAUDE.md
 
-- HomePage.tsx：/ 账本主页，结余和记账主区、个人模板、最近 8 笔；内部区分 HomeHeading / HomeBalance / RecentEntries，不包含统计与成员分支。
+- HomePage.tsx：/ 账本主页，结余和记账主区、个人模板、最近 8 笔（可左滑删除）；内部区分 HomeHeading / HomeBalance / RecentEntries，不包含统计与成员分支。
 - runtime.ts：录入、编辑、原因删除、动态分类、个人模板动作，查询通过共用 useOverview。
 - home.css：日常账本专属视觉，结余浅绿主区与一键记账，模板次之、记录再次。
 

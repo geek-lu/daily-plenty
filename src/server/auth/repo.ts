@@ -1,14 +1,19 @@
-/** [INPUT]: 数据库、会话表。[OUTPUT]: 会话持久化和持久限速计数。[POS]: auth L2。
+/** [INPUT]: 数据库、会话及用户状态。[OUTPUT]: 活跃用户会话持久化和持久限速计数。[POS]: auth L2。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
-import { eq, lt } from 'drizzle-orm';
+import { and, eq, lt, isNull } from 'drizzle-orm';
 import type { Store } from '../db/client';
-import { sessions } from '../db/schema';
+import { sessions, users } from '../db/schema';
 export function saveSession(store: Store, tokenHash: string, userId: string, expiresAt: number) {
   store.db.delete(sessions).where(lt(sessions.expiresAt, Date.now())).run();
   store.db.insert(sessions).values({ tokenHash, userId, expiresAt, createdAt: Date.now() }).run();
 }
 export const findSession = (store: Store, token: string) =>
-  store.db.select().from(sessions).where(eq(sessions.tokenHash, token)).get();
+  store.db
+    .select({ userId: sessions.userId, expiresAt: sessions.expiresAt })
+    .from(sessions)
+    .innerJoin(users, eq(users.id, sessions.userId))
+    .where(and(eq(sessions.tokenHash, token), isNull(users.disabledAt)))
+    .get();
 export const removeSession = (store: Store, token: string) =>
   store.db.delete(sessions).where(eq(sessions.tokenHash, token)).run();
 export function attempt(store: Store, key: string, period: number) {

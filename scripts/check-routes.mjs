@@ -1,5 +1,5 @@
 /** [INPUT]: pnpm build 生成的生产路由及 Next 请求处理器。
- * [OUTPUT]: 无端口的页面/API/PWA 检查，含生产 HTTP/HTTPS Cookie 与完整记账流程。[POS]: 使用内存数据库和模拟 HTTP 响应，不修改用户账本。
+ * [OUTPUT]: 无端口的页面/API/PWA 检查，含 Cookie、账本 API 密钥与完整记账流程。[POS]: 使用内存数据库和模拟 HTTP 响应，不修改用户账本。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
 import assert from 'node:assert/strict';
 import { IncomingMessage } from 'node:http';
@@ -14,13 +14,14 @@ process.env.NODE_ENV = 'production';
 process.env.DAILY_PLENTY_LOCAL_PREVIEW = 'false';
 const publicHttp = process.env.DAILY_PLENTY_ALLOW_HTTP === 'true';
 const app = next({ dev: false, dir: process.cwd(), hostname: 'localhost', port: 3000 });
-async function request(method, path, expected, body, cookie) {
+async function request(method, path, expected, body, cookie, extraHeaders = {}) {
   const req = new IncomingMessage(new Socket());
   req.url = path.startsWith('/') ? path : `/api/${path}`;
   req.method = method;
   req.headers = {
     host: publicHttp ? '203.0.113.10:3000' : 'localhost:3000',
     ...(cookie ? { cookie } : {}),
+    ...extraHeaders,
   };
   if (body !== undefined) {
     const payload = JSON.stringify(body);
@@ -81,7 +82,13 @@ try {
       icon.sizes,
     );
   }
-  for (const path of ['/', '/reports?month=2026-10', '/records?kind=expense', '/together']) {
+  for (const path of [
+    '/',
+    '/reports?month=2026-10',
+    '/records?kind=expense',
+    '/together',
+    '/together/api-keys',
+  ]) {
     const page = await request('GET', path, 200);
     assert.ok(page.data.includes('rel="manifest"'));
     assert.ok(page.data.includes('/icons/apple-touch-icon.png'));
@@ -182,6 +189,7 @@ try {
     cookie,
   );
   assert.equal(entry.data.categoryIcon, 'paw');
+  assert.equal(entry.data.source, 'manual');
   const report = await request('GET', `${base}/data?month=2026-11`, 200, undefined, cookie);
   assert.equal(report.data.summary.categories[0].icon, 'paw');
   await request(
@@ -282,12 +290,137 @@ try {
   );
   assert.equal(deletedTrend.data.summary.expense, 0);
   assert.ok(deletedTrend.data.points.every((point) => point.expense === 0 && point.count === 0));
+  const apiKey = await request(
+    'POST',
+    'auth/api-keys',
+    201,
+    { name: 'Route check', ledgerId },
+    cookie,
+  );
+  const authorization = { authorization: `Bearer ${apiKey.data.token}` };
+  const keyList = await request('GET', 'auth/api-keys', 200, undefined, cookie);
+  assert.equal(keyList.data.keys[0].ledgerId, ledgerId);
+  assert.equal(JSON.stringify(keyList.data).includes(apiKey.data.token), false);
+  const scoped = await request('GET', 'ledgers', 200, undefined, undefined, authorization);
+  assert.deepEqual(
+    scoped.data.ledgers.map((item) => item.id),
+    [ledgerId],
+  );
+  await request(
+    'POST',
+    'auth/api-keys',
+    403,
+    { name: 'Denied', ledgerId },
+    undefined,
+    authorization,
+  );
+  await request('GET', 'users/me', 403, undefined, undefined, authorization);
+  const candidates = await request(
+    'GET',
+    `${base}/recorders`,
+    200,
+    undefined,
+    undefined,
+    authorization,
+  );
+  const recorder = candidates.data.recorders.find((item) => item.userId !== owner.data.user.id);
+  assert.ok(recorder, 'shared key must expose another eligible recorder');
+  const keyEntry = {
+    recordedByMemberId: recorder.memberId,
+    kind: 'expense',
+    amountMinor: 2800,
+    categoryId: home.data.categories.find((item) => item.name === '餐饮').id,
+    paidByMemberId: home.data.members.find((item) => item.userId === owner.data.user.id).id,
+    note: 'API 午饭',
+    occurredOn: '2026-11-16',
+    requestId: randomUUID(),
+  };
+  const fromKey = await request('POST', `${base}/entries`, 201, keyEntry, undefined, authorization);
+  const retryKey = await request(
+    'POST',
+    `${base}/entries`,
+    201,
+    keyEntry,
+    undefined,
+    authorization,
+  );
+  assert.equal(fromKey.data.id, retryKey.data.id);
+  assert.equal(fromKey.data.createdBy, recorder.userId);
+  assert.equal(fromKey.data.source, 'ai');
+  assert.notEqual(fromKey.data.paidByMemberId, recorder.memberId);
+  const { recordedByMemberId: _recordedBy, ...editable } = keyEntry;
+  const apiPatch = {
+    ...editable,
+    amountMinor: 3000,
+    version: fromKey.data.version,
+    updatedByMemberId: recorder.memberId,
+    requestId: randomUUID(),
+  };
+  const apiEdited = await request(
+    'PATCH',
+    `${base}/entries/${fromKey.data.id}`,
+    200,
+    apiPatch,
+    undefined,
+    authorization,
+  );
+  assert.equal(apiEdited.data.id, fromKey.data.id);
+  assert.equal(apiEdited.data.version, 2);
+  assert.equal(apiEdited.data.source, 'ai');
+  const queriedEntry = await request(
+    'GET',
+    `${base}/entries/${fromKey.data.id}`,
+    200,
+    undefined,
+    undefined,
+    authorization,
+  );
+  assert.equal(queriedEntry.data.amountMinor, 3000);
+  const repeatedEdit = await request(
+    'PATCH',
+    `${base}/entries/${fromKey.data.id}`,
+    200,
+    apiPatch,
+    undefined,
+    authorization,
+  );
+  assert.equal(repeatedEdit.data.version, 2);
+  await request(
+    'PATCH',
+    `${base}/entries/${fromKey.data.id}`,
+    409,
+    { ...apiPatch, requestId: randomUUID() },
+    undefined,
+    authorization,
+  );
+  const manualForKey = await request(
+    'POST',
+    `${base}/entries`,
+    201,
+    { ...editable, requestId: randomUUID() },
+    cookie,
+  );
+  const deniedEdit = await request(
+    'PATCH',
+    `${base}/entries/${manualForKey.data.id}`,
+    403,
+    { ...apiPatch, version: manualForKey.data.version, requestId: randomUUID() },
+    undefined,
+    authorization,
+  );
+  assert.equal(deniedEdit.data.code, 'AI_ENTRY_REQUIRED');
   await request('DELETE', 'auth/session', 200, undefined, cookie);
   await request('GET', 'users/me', 401, undefined, cookie);
   await request('GET', `${base}/entries`, 401, undefined, cookie);
   await request('GET', `${base}/entries/export`, 401, undefined, cookie);
   await request('GET', `${base}/reports?granularity=year`, 401, undefined, cookie);
-  await request('POST', 'auth/session', 200, { loginName: 'owner', password: '123456' });
+  await request('GET', 'ledgers', 200, undefined, undefined, authorization);
+  const relogin = await request('POST', 'auth/session', 200, {
+    loginName: 'owner',
+    password: '123456',
+  });
+  await request('DELETE', `auth/api-keys/${apiKey.data.key.id}`, 200, undefined, relogin.cookie);
+  await request('GET', 'ledgers', 401, undefined, undefined, authorization);
   console.log('生产路由检查通过；未监听端口，未写入用户数据库。');
 } catch (error) {
   console.error(error);

@@ -1,6 +1,6 @@
 'use client';
 /** [INPUT]: common/records 的 runtime/筛选/详情/下拉加载，pc/shell 版式原子与 Download。
- * [OUTPUT]: PC 明细页：整屏两栏，筛选栏与账单列表各自内部滚动，列表滚到底自动加载。
+ * [OUTPUT]: PC 明细页：整屏两栏，筛选栏与账单列表各自内部滚动，列表滚到底自动加载，左滑直接进入删除确认。
  * [POS]: pc/records 桌面视图；查询逻辑与手机版完全共用，只重排信息密度。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
 import { useRef } from 'react';
@@ -124,6 +124,7 @@ function Results({ state }: { state: ReturnType<typeof useRecords> }) {
                 canWrite={data.ledger.role === 'editor'}
                 disabled={state.loading || editor.busy}
                 onEdit={editor.open}
+                onDelete={editor.openDelete}
               />
             ))}
           </div>

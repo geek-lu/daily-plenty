@@ -1,4 +1,4 @@
-/** [INPUT]: Drizzle SQLite 列定义。[OUTPUT]: 类型化数据表（分类含持久化图标、账单含删除原因及评论回复关联）。[POS]: 仓储共享的数据定义，与 migrations 同步。
+/** [INPUT]: Drizzle SQLite 列定义。[OUTPUT]: 类型化数据表，含账单原始来源、账本共享密钥与 API 记账幂等记录。[POS]: 仓储共享的数据定义，与 migrations 同步。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 import { sql } from 'drizzle-orm';
@@ -44,6 +44,9 @@ export const categories = sqliteTable('categories', {
 export const entries = sqliteTable('entries', {
   id: text('id').primaryKey(),
   ledgerId: text('ledger_id').notNull(),
+  source: text('source', { enum: ['manual', 'ai'] })
+    .notNull()
+    .default('manual'),
   kind: text('kind', { enum: ['expense', 'income'] }).notNull(),
   amountMinor: integer('amount_minor').notNull(),
   currencyCode: text('currency_code').notNull().default('CNY'),
@@ -100,6 +103,26 @@ export const sessions = sqliteTable('sessions', {
   userId: text('user_id').notNull(),
   expiresAt: integer('expires_at').notNull(),
   createdAt: integer('created_at').notNull(),
+});
+export const apiKeys = sqliteTable('api_keys', {
+  id: text('id').primaryKey(),
+  createdBy: text('created_by').notNull(),
+  ledgerId: text('ledger_id').notNull(),
+  name: text('name').notNull(),
+  tokenHash: text('token_hash').notNull(),
+  prefix: text('prefix').notNull(),
+  createdAt: integer('created_at').notNull(),
+  lastUsedAt: integer('last_used_at'),
+  revokedAt: integer('revoked_at'),
+});
+export const ledgerApiRequests = sqliteTable('ledger_api_requests', {
+  ledgerId: text('ledger_id').notNull(),
+  requestId: text('request_id').notNull(),
+  apiKeyId: text('api_key_id').notNull(),
+  payloadHash: text('payload_hash').notNull(),
+  resultEntryId: text('result_entry_id').notNull(),
+  responseJson: text('response_json').notNull(),
+  createdAt: timestamp('created_at'),
 });
 export const invites = sqliteTable('invites', {
   id: text('id').primaryKey(),

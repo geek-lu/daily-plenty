@@ -1,7 +1,7 @@
 'use client';
 /**
  * [INPUT]: 当前账本、刷新/提示回调、共用录入 runtime。
- * [OUTPUT]: 明细页账单选择、编辑、原因删除与个人模板保存。
+ * [OUTPUT]: 明细页账单选择、编辑、原因删除与个人模板保存；openDelete 保留版本并直达确认。
  * [POS]: records runtime；校验、请求与锁由 ledger/editor 管理。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
@@ -19,13 +19,15 @@ export function useEntryEditor(
 ) {
   const editor = useEntryForm(ledgerId);
   const [selected, setSelected] = useState<Entry | null>(null);
+  const [deleteOnOpen, setDeleteOnOpen] = useState(false);
   const { commands, mutate, form } = editor;
 
-  function open(entry: Entry) {
+  function open(entry: Entry, action: 'edit' | 'delete' = 'edit') {
     if (editor.isPending()) {
       return;
     }
     editor.reset(entryForm(entry));
+    setDeleteOnOpen(action === 'delete');
     setSelected(entry);
   }
 
@@ -66,7 +68,9 @@ export function useEntryEditor(
   return {
     ...editor,
     selected,
+    deleteOnOpen,
     open,
+    openDelete: (entry: Entry) => open(entry, 'delete'),
     close: () => {
       if (!editor.isPending()) {
         setSelected(null);

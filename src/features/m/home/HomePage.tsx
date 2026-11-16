@@ -1,5 +1,5 @@
 'use client';
-/** [INPUT]: 首页 runtime、全局记账入口、Presence 与共用录入组件。[OUTPUT]: 日常账本和可淡出提示/列表项评论与抽屉。
+/** [INPUT]: 首页 runtime、全局记账入口、Presence 与共用录入组件。[OUTPUT]: 日常账本和可淡出提示/列表项评论与抽屉，左滑直接进入删除确认。
  * [POS]: 只组合首页功能，不包含统计/成员页面或导航。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
 import Link from 'next/link';
@@ -92,7 +92,8 @@ function HomeContent() {
       </Presence>
       <Presence show={state.modal}>
         <EntryDrawer
-          key={form.id || 'new'}
+          key={`${form.id || 'new'}:${state.deleteOnOpen}`}
+          initialDeleting={state.deleteOnOpen}
           open={state.modal}
           form={form}
           categories={data?.categories || []}
@@ -237,6 +238,7 @@ function RecentEntries({ state, entries }: { state: HomeState; entries: Entry[] 
               canWrite={canEdit}
               disabled={state.busy || !canEdit}
               onEdit={state.openEdit}
+              onDelete={state.openDelete}
             />
           </div>
         ))

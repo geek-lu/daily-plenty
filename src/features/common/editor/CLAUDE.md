@@ -8,4 +8,6 @@
 
 依赖 UI → 页面 runtime → useEntryForm → commands → api；form 仅依赖 shared。刷新和开关抽屉由各入口决定。
 
+entryForm 保留 source 用于详情，entryInput/templateInput 不提交它，连续录入清空原账单来源。
+
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md

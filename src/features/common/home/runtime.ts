@@ -1,7 +1,7 @@
 'use client';
 /**
  * [INPUT]: useOverview、共用录入 runtime 与表单映射。
- * [OUTPUT]: 首页已有账单与个人模板的打开、保存、删除和刷新。
+ * [OUTPUT]: 首页已有账单与个人模板的打开、保存、删除和刷新；openDelete 直接进入原因确认。
  * [POS]: home runtime；公共校验、提交锁和请求身份由 ledger/editor 管理。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
@@ -18,11 +18,13 @@ export function useHome() {
   const editor = useEntryForm(overview.ledgerId);
   const { form, commands, mutate } = editor;
   const [modal, setModal] = useState(false);
+  const [deleteOnOpen, setDeleteOnOpen] = useState(false);
   const [templateId, setTemplateId] = useState<string>();
   const [templateOnly, setTemplateOnly] = useState(false);
   const [notice, setNotice] = useState('');
 
   function openNew() {
+    setDeleteOnOpen(false);
     const member = overview.data?.members.find(
       (member) => member.userId === overview.user?.id && !member.leftAt,
     );
@@ -33,14 +35,19 @@ export function useHome() {
   }
 
   function openTemplate(template: EntryTemplate, editing = false) {
+    setDeleteOnOpen(false);
     editor.reset(templateForm(template), editing ? template.name : '');
     setTemplateId(editing ? template.id : undefined);
     setTemplateOnly(editing);
     setModal(true);
   }
 
-  function openEdit(entry: Entry) {
+  function openEdit(entry: Entry, action: 'edit' | 'delete' = 'edit') {
+    if (editor.isPending()) {
+      return;
+    }
     editor.reset(entryForm(entry));
+    setDeleteOnOpen(action === 'delete');
     setTemplateId(undefined);
     setTemplateOnly(false);
     setModal(true);
@@ -97,6 +104,7 @@ export function useHome() {
     ...overview,
     ...editor,
     modal,
+    deleteOnOpen,
     templateId,
     templateOnly,
     setTemplateOnly,
@@ -114,6 +122,7 @@ export function useHome() {
     openTemplate: (template: EntryTemplate) => openTemplate(template),
     openTemplateEdit: (template: EntryTemplate) => openTemplate(template, true),
     openEdit,
+    openDelete: (entry: Entry) => openEdit(entry, 'delete'),
     addCategory,
     saveTemplate,
     deleteTemplate,

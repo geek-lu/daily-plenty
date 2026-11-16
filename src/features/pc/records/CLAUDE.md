@@ -2,7 +2,7 @@
 
 > L2 | 父级: ../CLAUDE.md
 
-- RecordsPage.tsx：标题栏导出按钮；左筛选栏 + 右指标/列表；详情与无限下拉来自 common/records，观察器以列表内部容器为根。
+- RecordsPage.tsx：标题栏导出按钮；左筛选栏 + 右指标/列表（可左滑删除）；详情与无限下拉来自 common/records，观察器以列表内部容器为根。
 - FilterRail.tsx：常驻展开的筛选栏，复用 useFilterDraft 与 AdvancedFields，底部应用/重置吸附。
 - records.css：常驻筛选栏两栏网格、固定搜索/操作与内部滚动字段；小桌面单列筛选、紧凑列表。
 

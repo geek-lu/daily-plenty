@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 公共账单/模板契约、金额与日期规则。
- * [OUTPUT]: 空表单、账单/模板映射、提交校验与连续录入重置。
+ * [OUTPUT]: 空表单、账单/模板映射、只读来源、提交校验与连续录入重置；来源不进入写请求。
  * [POS]: ledger/editor 纯规则，三个录入入口共用，不依赖 React 或 HTTP。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
@@ -22,6 +22,7 @@ export function entryForm(entry: Entry): FormState {
   return {
     ...templateForm(entry),
     id: entry.id,
+    source: entry.source,
     version: entry.version,
     occurredOn: entry.occurredOn,
   };

@@ -1,5 +1,5 @@
 /**
- * [INPUT]: 账户/账本路由表、HTTP 请求与延迟数据库连接。
+ * [INPUT]: 账户/账本/API 密钥管理路由表、HTTP 请求与延迟数据库连接。
  * [OUTPUT]: 唯一 API dispatch；精确匹配方法/段数，未知接口返回 404。
  * [POS]: server/http 路由入口；不包含业务规则或重复异常捕获。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
@@ -9,9 +9,10 @@ import { getStore } from '../db/client';
 import { AppError } from '@/shared/errors';
 import { accountRoutes } from './account-routes';
 import { ledgerRoutes } from './ledger-routes';
+import { apiKeyRoutes } from './api-key-routes';
 import { errorResponse } from './request';
 
-const routes = [...accountRoutes, ...ledgerRoutes].map((route) => ({
+const routes = [...accountRoutes, ...ledgerRoutes, ...apiKeyRoutes].map((route) => ({
   ...route,
   segments: route.path.split('/'),
 }));

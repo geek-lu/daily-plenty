@@ -1,5 +1,5 @@
 'use client';
-/** [INPUT]: 共享账单契约、BottomDrawer 与分类/模板/删除组件。[OUTPUT]: EntryDrawer，收支切换由 React 状态触发分类淡入。
+/** [INPUT]: 共享账单契约、来源标签、BottomDrawer 与分类/模板/删除组件。[OUTPUT]: 仅 AI 展示来源和人工修正说明的 EntryDrawer；initialDeleting 直接进入原因确认，取消关闭。
  * [POS]: 账本和独立明细复用的手机编辑弹层，固定操作区与键盘内滚动表单。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
 import { useState } from 'react';
@@ -11,9 +11,11 @@ import { CategoryIcon } from './CategoryIcon';
 import { DeleteEntryDialog } from './DeleteEntryDialog';
 import { CategoryCreator } from './preferences/CategoryCreator';
 import { TemplateSaver } from './preferences/TemplateSaver';
+import { EntrySourceBadge } from './EntrySourceBadge';
 
 type EntryDrawerProps = {
   open: boolean;
+  initialDeleting?: boolean;
   form: FormState;
   categories: Category[];
   members: Member[];
@@ -43,7 +45,7 @@ function drawerTitle({ templateOnly, editingTemplate, form }: EntryDrawerProps) 
 }
 
 export function EntryDrawer(props: EntryDrawerProps) {
-  const [deleting, setDeleting] = useState(false);
+  const [deleting, setDeleting] = useState(props.initialDeleting || false);
   const { open, onDelete, deleteSummary, busy, error, onClose, loading, notice } = props;
   if (!open) {
     return null;
@@ -54,7 +56,7 @@ export function EntryDrawer(props: EntryDrawerProps) {
         summary={deleteSummary}
         busy={busy}
         error={error}
-        onCancel={() => setDeleting(false)}
+        onCancel={props.initialDeleting ? onClose : () => setDeleting(false)}
         onDelete={onDelete}
       />
     );
@@ -87,6 +89,12 @@ export function EntryDrawer(props: EntryDrawerProps) {
         >
           {notice}
         </p>
+      )}
+      {props.form.id && props.form.source === 'ai' && (
+        <div className="entry-source-detail">
+          <EntrySourceBadge source={props.form.source} />
+          <p>可核对并修改下方内容，保存后仍保留 AI 记录来源。</p>
+        </div>
       )}
       <EntryFields {...props} />
     </BottomDrawer>

@@ -79,6 +79,19 @@ pnpm dev
 
 可选：`pnpm configure` 生成 `.env.local`（数据库路径等），只补缺项，不覆盖已有配置。
 
+## AI 自然语言记账
+
+仓库提供 [daily-plenty-bookkeeping 技能](skills/daily-plenty-bookkeeping/SKILL.md)，使用现有 HTTP API，适合接入 Work Buddy 等支持 `SKILL.md` 且具备 Python 3.9+ 命令执行与网络能力的 agent。
+
+1. 将整个 `skills/daily-plenty-bookkeeping/` 文件夹导入宿主支持的技能目录，启用自动匹配；具体导入入口以宿主版本为准。
+2. 网页登录后进入「我们 → API 密钥」，选择有记账权限的账本，为助手命名并生成共享密钥。完整密钥只显示一次，长期有效，可随时在该页面撤销。
+3. 在宿主私有配置中设置 `DAILY_PLENTY_BASE_URL`（应用根地址，不含 `/api`）和 `DAILY_PLENTY_API_KEY`。可选 `DAILY_PLENTY_LEDGER_ID` 指定默认账本。
+4. 允许该 agent 访问服务并保存私有操作状态，然后说：“今天午饭牛肉汤花了 28 元，帮我记一下。”
+
+Agent 会匹配真实的餐饮分类、当前用户的付款成员 ID，换算为 2800 分并提交；信息完整时直接记录，缺金额或无法确定账本时追问。API 确认成功后才回复“已记”。重试沿用原 requestId，避免重复入账。
+
+服务器地址和凭据只存在于使用方配置，不填写到技能文件或分发包中。API Key 使用 Bearer 鉴权，每枚只属于一个账本，任一可记账成员配置一次即可共享使用，无需每人生成密钥。所有可记账成员均可在网页登录后管理该账本密钥；数据库只保存摘要，撤销或账本归档后失效。Agent 通过 GET `/api/ledgers/:ledgerId/recorders` 获取可录入成员，结合上下文确定 `recordedByMemberId`；不明确就询问，付款人另行确定。可查询绑定账本、新增账单，并按 ID 修改 AI 创建的账单；人工账单不可通过 API 修改，不开放删除、账户或个人模板。新 API 账单显示渐变「AI」标签，可以在网页中人工修正并保留来源；原有账单来源统一为人工，不显示标签。日常通过脚本查询、准备和提交；用原操作文件重试，避免重复记账。新增/修改/查询各用独立脚本，创建返回 entryId/version 供后续纠错；按需入口见 [Skill 索引](skills/daily-plenty-bookkeeping/SKILL.md)，接口排查见 [HTTP.md](skills/daily-plenty-bookkeeping/HTTP.md)。
+
 ## 开发
 
 ```bash

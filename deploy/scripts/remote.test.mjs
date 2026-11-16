@@ -103,11 +103,17 @@ function steps(records) {
   );
 }
 
-function assertCommentMigration(archive) {
-  const migration = 'migrations/0007_entry_comments.sql';
-  const result = spawnSync('tar', ['-xOzf', archive, `./${migration}`], { encoding: 'utf8' });
-  assert.equal(result.status, 0, result.stderr);
-  assert.equal(result.stdout, readFileSync(join(project, migration), 'utf8'));
+function assertIncrementalMigrations(archive) {
+  for (const migration of [
+    'migrations/0007_entry_comments.sql',
+    'migrations/0008_api_keys.sql',
+    'migrations/0009_ledger_api_keys.sql',
+    'migrations/0010_entry_source.sql',
+  ]) {
+    const result = spawnSync('tar', ['-xOzf', archive, `./${migration}`], { encoding: 'utf8' });
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stdout, readFileSync(join(project, migration), 'utf8'));
+  }
 }
 
 test('plain make is help only; deployment transports quoted options and includes PWA without local data', (t) => {
@@ -146,7 +152,7 @@ test('plain make is help only; deployment transports quoted options and includes
   assert.equal(listing.status, 0, listing.stderr);
   assert.match(listing.stdout, /\.\/public\/sw\.js/);
   assert.match(listing.stdout, /\.\/Makefile/);
-  assertCommentMigration(state.archive);
+  assertIncrementalMigrations(state.archive);
   assert.doesNotMatch(
     listing.stdout,
     /^\.\/(?:\.env[^/]*|node_modules|data|backups|\.next(?:-build)?)(?:\/|$)/m,
@@ -157,7 +163,7 @@ test('updates skip bootstrap; first deployment can opt out of swap', (t) => {
   const update = fixture(t);
   const result = update.run('update');
   assert.equal(result.status, 0, result.stderr + result.stdout);
-  assertCommentMigration(update.archive);
+  assertIncrementalMigrations(update.archive);
   assert.deepEqual(
     steps(update.records()).map((item) => item.args[0]),
     ['deploy/scripts/release.sh'],

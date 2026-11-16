@@ -17,4 +17,8 @@ ReportFilters / ReportPoint / ReportData 约定同一范围的完整汇总与支
 
 EntryComment 定义 id、entryId、authorId、authorName、rootId、replyToId、replyToName、content、createdAt；主评论的三个回复字段为 null。
 
+ApiKey / CreatedApiKey 定义所属账本、审计生成者 createdBy/creatorName、公开元数据及一次性 token；普通列表不含摘要或明文。Recorder 提供 memberId/userId/displayName；createApiEntryInput 在会话新增字段上增加必填 recordedByMemberId；updateApiEntryInput 在带版本编辑字段上增加必填 updatedByMemberId，均严格拒绝来源/创建人等多余字段。
+
+EntrySource 定义 manual / ai；Entry.source 为必需响应字段，FormState.source 仅展示，提交和模板输入不包含来源。
+
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md

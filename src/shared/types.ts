@@ -1,7 +1,22 @@
-/** [INPUT]: 无运行依赖。[OUTPUT]: 账单、评论、日/月/年统计、筛选分页及共用录入表单契约。[POS]: L0 公共业务语言。
+/** [INPUT]: 无运行依赖。[OUTPUT]: 账本共享密钥、录入人候选、账单及原始来源、评论、日/月/年统计、筛选分页及共用录入表单契约。[POS]: L0 公共业务语言。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
 export type Kind = 'expense' | 'income';
+export type EntrySource = 'manual' | 'ai';
 export type User = { id: string; displayName: string; loginName: string };
+export type ApiKey = {
+  id: string;
+  createdBy: string;
+  creatorName: string;
+  ledgerId: string;
+  ledgerName: string;
+  name: string;
+  prefix: string;
+  createdAt: number;
+  lastUsedAt: number | null;
+  revokedAt: number | null;
+};
+export type CreatedApiKey = { key: ApiKey; token: string };
+export type Recorder = { memberId: string; userId: string; displayName: string };
 export type Ledger = {
   id: string;
   name: string;
@@ -28,6 +43,7 @@ export type Category = {
 export type Entry = {
   id: string;
   ledgerId: string;
+  source: EntrySource;
   kind: Kind;
   amountMinor: number;
   currencyCode: string;
@@ -135,6 +151,7 @@ export type RecordsData = {
 
 export type FormState = {
   id?: string;
+  source?: EntrySource;
   kind: 'expense' | 'income';
   amount: string;
   categoryId: string;

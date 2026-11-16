@@ -76,7 +76,7 @@ export function Sidebar() {
           <Link
             key={tab.path}
             href={tab.href}
-            onClick={stayOnActive(tab.active)}
+            onClick={stayOnActive(tab.currentPage)}
             className="pc-nav-item"
             aria-current={tab.active ? 'page' : undefined}
           >

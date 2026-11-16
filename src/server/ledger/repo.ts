@@ -1,4 +1,4 @@
-/** [INPUT]: Store、Drizzle 表、已校验的过滤器。[OUTPUT]: 同账本查询写入、区间汇总、日/月/年分组及用户模板存取。[POS]: ledger 数据仓储。
+/** [INPUT]: Store、Drizzle 表、已校验的过滤器。[OUTPUT]: 账本/密钥授权数据、录入人候选、账本级 API 幂等、账单/统计及用户模板存取。[POS]: ledger 数据仓储。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
 import { and, desc, eq, getTableColumns, gte, isNull, lt, lte, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/sqlite-core';
@@ -12,6 +12,8 @@ import {
   mutationRequests,
   invites,
   entryTemplates,
+  apiKeys,
+  ledgerApiRequests,
 } from '../db/schema';
 import type {
   Entry,
@@ -45,6 +47,47 @@ export function listLedgers(store: Store, userId: string): Ledger[] {
     )
     .all();
 }
+export const keyLedger = (store: Store, keyId: string, ledgerId: string) =>
+  store.db
+    .select(getTableColumns(ledgers))
+    .from(ledgers)
+    .innerJoin(apiKeys, eq(apiKeys.ledgerId, ledgers.id))
+    .where(
+      and(
+        eq(apiKeys.id, keyId),
+        eq(ledgers.id, ledgerId),
+        isNull(apiKeys.revokedAt),
+        isNull(ledgers.archivedAt),
+      ),
+    )
+    .get();
+
+export const recorders = (store: Store, ledgerId: string) =>
+  store.db
+    .select({ memberId: memberships.id, userId: users.id, displayName: users.displayName })
+    .from(memberships)
+    .innerJoin(users, eq(users.id, memberships.userId))
+    .where(
+      and(
+        eq(memberships.ledgerId, ledgerId),
+        eq(memberships.role, 'editor'),
+        isNull(memberships.leftAt),
+        isNull(users.disabledAt),
+      ),
+    )
+    .orderBy(memberships.joinedAt, memberships.id)
+    .all();
+
+export const apiMutation = (store: Store, ledgerId: string, requestId: string) =>
+  store.db
+    .select()
+    .from(ledgerApiRequests)
+    .where(
+      and(eq(ledgerApiRequests.ledgerId, ledgerId), eq(ledgerApiRequests.requestId, requestId)),
+    )
+    .get();
+export const saveApiMutation = (store: Store, value: typeof ledgerApiRequests.$inferInsert) =>
+  store.db.insert(ledgerApiRequests).values(value).run();
 export function members(store: Store, ledgerId: string): Member[] {
   return store.db
     .select({

@@ -1,4 +1,4 @@
-/** [INPUT]: 当前会话用户、账本、原始筛选参数及共用 CSV 编码。[OUTPUT]: 授权的全部账单分页与同口径 CSV 导出。
+/** [INPUT]: 会话用户/账本密钥、原始筛选参数、access 授权及共用 CSV 编码。[OUTPUT]: 授权的全部账单分页与仅会话可用的同口径 CSV 导出。
  * [POS]: ledger 业务层，复用成员鉴权，独立于首页月度概览。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
 import { entryCsvHeader, entryCsvRow } from '../csv';
@@ -6,13 +6,19 @@ import type { Store } from '../../db/client';
 import { recordsInput } from '@/shared/validation';
 import { ensure } from '@/shared/errors';
 import { authorize } from '../service';
+import { authorizeRead, type LedgerPrincipal } from '../access';
 import * as repo from '../repo';
 import * as recordsRepo from './repo';
 const pageSize = 30;
-export function queryRecords(store: Store, actorId: string, ledgerId: string, raw: unknown) {
+export function queryRecords(
+  store: Store,
+  principal: LedgerPrincipal,
+  ledgerId: string,
+  raw: unknown,
+) {
   const filters = recordsInput.parse(raw);
   return store.sqlite.transaction(() => {
-    const access = authorize(store, actorId, ledgerId);
+    const ledger = authorizeRead(store, principal, ledgerId);
     const totals = recordsRepo.totals(store, ledgerId, filters);
     ensure(
       Number.isSafeInteger(totals.income) && Number.isSafeInteger(totals.expense),
@@ -22,7 +28,7 @@ export function queryRecords(store: Store, actorId: string, ledgerId: string, ra
     const totalPages = Math.max(1, Math.ceil(totals.count / pageSize));
     const page = Math.min(filters.page, totalPages);
     return {
-      ledger: { ...access.ledger, role: access.member.role },
+      ledger,
       members: repo.members(store, ledgerId),
       categories: repo.categoryList(store, ledgerId),
       entries: recordsRepo.list(store, ledgerId, filters, (page - 1) * pageSize, pageSize),

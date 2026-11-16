@@ -4,7 +4,7 @@
 
 - RecordsPage.tsx：手机明细页编排：标题/账本、筛选、提示、结果与下载。
 - RecordsFilters.tsx：搜索 + BottomDrawer 右滑浮层的高级条件；草稿与字段来自 common/records/filter-panel。
-- RecordsResults.tsx：条件标签、2×2 汇总、EntryRow 卡片列表、LoadMore 与 EntryDetail。
+- RecordsResults.tsx：条件标签、2×2 汇总、EntryRow 卡片列表（可左滑删除，加载/提交中禁用）、LoadMore 与 EntryDetail。
 - records.css：按 CSS 视口宽度适配；400px 起成对字段，768px 起四项汇总并排；48px 触控区与四边安全区。
 
 手机筛选包含圆形展开标记、分组细线、三列分类与至少 44px 收支切换触点；保留草稿应用和重置语义。

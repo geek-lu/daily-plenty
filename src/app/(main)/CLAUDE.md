@@ -10,4 +10,6 @@
 
 每个 page.tsx 只用 Adaptive 二选一渲染 features/pc 或 features/m 的同名页面，路由与 URL 条件两端一致。
 
+- together/api-keys/page.tsx：账本共享密钥二级设置，两端共享响应式设置视图，不增加一级导航。
+
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md

@@ -1,7 +1,7 @@
 'use client';
 /**
  * [INPUT]: 明细查询状态、账单编辑 runtime 和共用抽屉。
- * [OUTPUT]: 已应用条件、收支汇总、无限下拉账单及详情/编辑入口。
+ * [OUTPUT]: 已应用条件、收支汇总、无限下拉账单及详情/编辑/左滑删除入口。
  * [POS]: m/records 手机结果区；条件摘要、详情抽屉与下拉加载来自 common/records。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
@@ -76,7 +76,9 @@ export function RecordsResults({ state }: { state: ReturnType<typeof useRecords>
                 defaultCommentsExpanded={false}
                 entry={entry}
                 canWrite={data.ledger.role === 'editor'}
+                disabled={state.loading || editor.busy}
                 onEdit={editor.open}
+                onDelete={editor.openDelete}
               />
             </div>
           ))}

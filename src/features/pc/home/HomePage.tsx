@@ -1,6 +1,6 @@
 'use client';
 /** [INPUT]: common/home runtime、全局记账入口、共用 EntryRow/EntryDrawer/TemplateList，pc/shell 版式与 共用列表项。
- * [OUTPUT]: PC 账本首页：整屏指标条 + 最近账单列表（左，内部滚动）与模板/分类侧栏（右，内部滚动）。
+ * [OUTPUT]: PC 账本首页：整屏指标条 + 最近账单列表（左，内部滚动与左滑删除）与模板/分类侧栏（右，内部滚动）。
  * [POS]: pc/home 桌面视图；与手机首页共用 useHome，账本切换在侧边栏。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
 import Link from 'next/link';
@@ -109,6 +109,7 @@ function HomeContent() {
                   canWrite={canEdit}
                   disabled={state.busy || !canEdit}
                   onEdit={state.openEdit}
+                  onDelete={state.openDelete}
                 />
               ))}
             </div>
@@ -163,7 +164,8 @@ function HomeContent() {
       </Presence>
       <Presence show={state.modal}>
         <EntryDrawer
-          key={form.id || 'new'}
+          key={`${form.id || 'new'}:${state.deleteOnOpen}`}
+          initialDeleting={state.deleteOnOpen}
           open={state.modal}
           form={form}
           categories={data?.categories || []}

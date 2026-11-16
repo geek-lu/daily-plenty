@@ -1,0 +1,30 @@
+/* [INPUT]: MUJI 颜色令牌与服务端来源标记。
+ * [OUTPUT]: 紧凑浅蓝紫渐变 AI 标签与编辑说明；人工不显示标签。
+ * [POS]: EntrySourceBadge 及详情的共用展示，不将来源设为可编辑字段。
+ * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
+.entry-source-badge {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  justify-content: center;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: linear-gradient(120deg, #edf3ff 0%, #f3edff 100%);
+  color: #6655a6;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 14px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  box-shadow: inset 0 0 0 1px rgb(109 91 170 / 12%);
+}
+.entry-source-detail {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-bottom: 24px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--color-muted);
+}

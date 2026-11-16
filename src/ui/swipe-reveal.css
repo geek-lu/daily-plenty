@@ -1,0 +1,70 @@
+/* [INPUT]: SwipeReveal 的位置/拖动/可用状态与 MUJI 令牌。
+ * [OUTPUT]: 左滑露出 88px 右侧操作，展开时前景投影与操作层内阴影；回弹和 reduced-motion，保留纵向滚动。
+ * [POS]: 浏览器手势适配样式，颜色和布局由状态声明，不修改 DOM 样式。
+ * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
+.swipe-reveal {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 5px;
+}
+.swipe-reveal-content {
+  position: relative;
+  z-index: 1;
+  border-radius: inherit;
+  background: var(--color-surface);
+  transition:
+    transform 180ms ease-out,
+    box-shadow 180ms ease-out;
+}
+.swipe-reveal:has(> .swipe-reveal-action:not([hidden])) > .swipe-reveal-content {
+  box-shadow:
+    6px 0 14px -4px color-mix(in srgb, var(--color-ink) 30%, transparent),
+    1px 0 0 color-mix(in srgb, var(--color-ink) 12%, transparent);
+}
+.swipe-reveal[data-enabled='true'] .swipe-reveal-content {
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.swipe-reveal-content[data-dragging='true'] {
+  transition: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .swipe-reveal[data-enabled='true'] .swipe-reveal-content,
+  .swipe-reveal[data-enabled='true'] .swipe-reveal-content button {
+    cursor: grab;
+  }
+  .swipe-reveal[data-enabled='true'] .swipe-reveal-content[data-dragging='true'],
+  .swipe-reveal[data-enabled='true'] .swipe-reveal-content[data-dragging='true'] button {
+    cursor: grabbing;
+  }
+}
+.swipe-reveal-action {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 88px;
+  background: var(--color-accent);
+  color: var(--color-surface);
+  box-shadow: inset 4px 0 8px -4px color-mix(in srgb, var(--color-ink) 28%, transparent);
+}
+.swipe-reveal-action button {
+  width: 100%;
+  height: 100%;
+  min-height: 44px;
+  padding: 12px;
+  font-size: 14px;
+}
+.swipe-reveal-action button:disabled {
+  opacity: 1;
+}
+.swipe-reveal-action button:focus-visible {
+  outline: 2px solid var(--color-surface);
+  outline-offset: -5px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .swipe-reveal-content {
+    transition: none;
+  }
+}

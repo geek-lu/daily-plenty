@@ -1,21 +1,29 @@
 /**
  * [INPUT]: ledger 服务及 HTTP 解析/认证契约。
  * [OUTPUT]: 账本、查询、分类、模板、邀请、账单和评论路由表。
- * [POS]: server/http 账本适配；会话只解析一次，权限统一由服务层校验。
+ * [POS]: server/http 账本适配；密钥可查询/新增及修改 AI 账单，权限与来源限制由服务校验。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
 import { atomic } from '../db/client';
 import { setupInput } from '@/shared/validation';
 import * as ledger from '../ledger/service';
 import * as entries from '../ledger/entries';
+import { createApiEntry, editApiEntry } from '../ledger/api-entries';
 import * as comments from '../ledger/comments';
 import * as invites from '../ledger/invitations';
 import * as preferences from '../ledger/preferences';
 import { queryRecords, exportRecords } from '../ledger/records';
 import { json, text } from './context';
-import { authenticated, body, type Route } from './request';
+import { authenticated, ledgerAuthenticated, body, type Route } from './request';
 
 export const ledgerRoutes: Route[] = [
+  {
+    method: 'GET',
+    path: 'ledgers/:ledgerId/recorders',
+    handle: ledgerAuthenticated(({ store, principal, params }) =>
+      json({ recorders: ledger.listRecorders(store, principal, params.ledgerId) }),
+    ),
+  },
   {
     method: 'GET',
     path: 'ledgers/:ledgerId/entries/:id/comments',
@@ -36,8 +44,8 @@ export const ledgerRoutes: Route[] = [
   {
     method: 'GET',
     path: 'ledgers',
-    handle: authenticated(({ store, userId }) =>
-      json({ ledgers: ledger.listLedgers(store, userId) }),
+    handle: ledgerAuthenticated(({ store, principal }) =>
+      json({ ledgers: ledger.listLedgers(store, principal) }),
     ),
   },
   {
@@ -51,11 +59,11 @@ export const ledgerRoutes: Route[] = [
   {
     method: 'GET',
     path: 'ledgers/:ledgerId/data',
-    handle: authenticated(({ store, userId, params, request }) =>
+    handle: ledgerAuthenticated(({ store, principal, params, request }) =>
       json(
         ledger.query(
           store,
-          userId,
+          principal,
           params.ledgerId,
           Object.fromEntries(request.nextUrl.searchParams),
         ),
@@ -65,11 +73,11 @@ export const ledgerRoutes: Route[] = [
   {
     method: 'GET',
     path: 'ledgers/:ledgerId/reports',
-    handle: authenticated(({ store, userId, params, request }) =>
+    handle: ledgerAuthenticated(({ store, principal, params, request }) =>
       json(
         ledger.queryReport(
           store,
-          userId,
+          principal,
           params.ledgerId,
           Object.fromEntries(request.nextUrl.searchParams),
         ),
@@ -94,11 +102,11 @@ export const ledgerRoutes: Route[] = [
   {
     method: 'GET',
     path: 'ledgers/:ledgerId/entries',
-    handle: authenticated(({ store, userId, params, request }) =>
+    handle: ledgerAuthenticated(({ store, principal, params, request }) =>
       json(
         queryRecords(
           store,
-          userId,
+          principal,
           params.ledgerId,
           Object.fromEntries(request.nextUrl.searchParams),
         ),
@@ -121,18 +129,35 @@ export const ledgerRoutes: Route[] = [
     ),
   },
   {
+    method: 'GET',
+    path: 'ledgers/:ledgerId/entries/:id',
+    handle: ledgerAuthenticated(({ store, principal, params }) =>
+      json(ledger.getEntry(store, principal, params.ledgerId, params.id)),
+    ),
+  },
+  {
     method: 'POST',
     path: 'ledgers/:ledgerId/entries',
-    handle: authenticated(async ({ store, userId, params, request }) =>
-      json(entries.createEntry(store, userId, params.ledgerId, await body(request)), 201),
-    ),
+    handle: ledgerAuthenticated(async ({ store, principal, params, request }) => {
+      const input = await body(request);
+      const entry =
+        typeof principal === 'string'
+          ? entries.createEntry(store, principal, params.ledgerId, input)
+          : createApiEntry(store, principal, params.ledgerId, input);
+      return json(entry, 201);
+    }),
   },
   {
     method: 'PATCH',
     path: 'ledgers/:ledgerId/entries/:id',
-    handle: authenticated(async ({ store, userId, params, request }) =>
-      json(entries.editEntry(store, userId, params.ledgerId, params.id, await body(request))),
-    ),
+    handle: ledgerAuthenticated(async ({ store, principal, params, request }) => {
+      const input = await body(request);
+      return json(
+        typeof principal === 'string'
+          ? entries.editEntry(store, principal, params.ledgerId, params.id, input)
+          : editApiEntry(store, principal, params.ledgerId, params.id, input),
+      );
+    }),
   },
   {
     method: 'DELETE',

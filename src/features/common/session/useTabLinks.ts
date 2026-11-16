@@ -1,5 +1,5 @@
 'use client';
-/** [INPUT]: 当前路由、查询参数、会话用户/账本与导航纯规则。[OUTPUT]: useTabLinks 四页链接、选中态与按账本记忆的地址。
+/** [INPUT]: 当前路由、查询参数、会话用户/账本与导航纯规则。[OUTPUT]: useTabLinks 四页链接、含二级设置的选中态与按账本记忆的地址。
  * [POS]: common/session 导航 runtime；手机底栏与 PC 侧边栏共用，只渲染方式不同。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
 import { useEffect, useState } from 'react';
@@ -36,8 +36,14 @@ export function useTabLinks() {
   }, [current, ledgerId, pathname, user]);
   const remembered = history.user === user?.id ? history.urls : {};
   return tabs.map((tab) => {
-    const active = tab.path === pathname;
-    return { ...tab, active, href: active ? current : tabHref(tab.path, ledgerId, remembered) };
+    const currentPage = tab.path === pathname;
+    const active = currentPage || (tab.path !== '/' && pathname.startsWith(`${tab.path}/`));
+    return {
+      ...tab,
+      active,
+      currentPage,
+      href: currentPage ? current : tabHref(tab.path, ledgerId, remembered),
+    };
   });
 }
 

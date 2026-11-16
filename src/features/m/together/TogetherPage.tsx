@@ -1,7 +1,9 @@
 'use client';
-/** [INPUT]: together runtime、当前会话、Presence 与桌面安装入口。[OUTPUT]: 姓名末字头像、成员关系、可渐入/退出的邀请和账号页。
+/** [INPUT]: together runtime、当前会话、Presence 与桌面安装入口。[OUTPUT]: 姓名末字头像、成员关系、可渐入/退出的邀请、账号与 API 密钥设置入口。
  * [POS]: together 独立页面，不展示月度金额或账单筛选。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
+import Link from 'next/link';
+import { InterfaceIcon } from '@/features/common/ui/InterfaceIcon';
 import { useSession } from '@/features/common/session/runtime';
 import { InstallCard } from '@/ui/pwa/InstallCard';
 import { Presence } from '@/ui/motion';
@@ -160,6 +162,16 @@ function TogetherContent() {
             </dd>
           </div>
         </dl>
+        <Link
+          className="btn mt-5 w-full justify-between"
+          href={`/together/api-keys?${new URLSearchParams({ ledger: state.ledgerId })}`}
+        >
+          <span>API 密钥 · 连接 AI 助手</span>
+          <InterfaceIcon
+            name="arrow"
+            size={16}
+          />
+        </Link>
         <button
           className="btn mt-5 w-full"
           onClick={state.logout}

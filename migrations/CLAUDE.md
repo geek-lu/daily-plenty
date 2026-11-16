@@ -17,4 +17,10 @@
 
 - 0007_entry_comments.sql：新增 entry_comments，复合外键限制同账本/账单及作者成员，回复关联与时间索引；保留既有账单。
 
+- 0008_api_keys.sql：新增用户 + 账本绑定的 API 密钥摘要与生命周期元数据，独立于 sessions；保留既有数据。
+
+- 0009_ledger_api_keys.sql：密钥改归账本，created_by 仅审计；撤销旧个人凭据，新增 ledger_api_requests 保存账本级 API 幂等记录。
+
+- 0010_entry_source.sql：新增 manual/ai 原始来源，全部历史账单及其幂等响应默认 manual；后续来源由服务端录入渠道确定。
+
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md

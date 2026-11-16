@@ -5,4 +5,6 @@
 - TogetherPage.tsx：左栏成员横排卡片与邀请链接行，右栏账号信息、退出与安装入口。
 - together.css：两栏独立滚动网格、成员卡、邀请行与账号列表。
 
+TogetherPage.tsx 的账号区新增 /together/api-keys 入口，保留当前账本参数。
+
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md

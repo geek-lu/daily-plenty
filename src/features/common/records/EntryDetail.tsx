@@ -1,5 +1,5 @@
 'use client';
-/** [INPUT]: useEntryEditor 状态、明细数据与共用抽屉。[OUTPUT]: EntryDetail：可编辑成员打开 EntryDrawer，只读成员打开详情抽屉。
+/** [INPUT]: useEntryEditor 状态、明细数据、仅 AI 展示的来源标签与共用抽屉。[OUTPUT]: EntryDetail：可编辑成员打开编辑或删除确认抽屉，只读成员打开详情抽屉。
  * [POS]: common/records 详情入口；手机列表与 PC 列表点击同一行为，Presence 保留退出动画。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
 import type { RecordsData } from '@/shared/types';
@@ -7,6 +7,7 @@ import { money } from '@/shared/money';
 import { Presence } from '@/ui/motion';
 import { BottomDrawer } from '../ui/BottomDrawer';
 import { EntryDrawer } from '../ui/EntryDrawer';
+import { EntrySourceBadge } from '../ui/EntrySourceBadge';
 import type { useEntryEditor } from './useEntryEditor';
 
 export function EntryDetail({
@@ -22,7 +23,8 @@ export function EntryDetail({
       {selected &&
         (data.ledger.role === 'editor' ? (
           <EntryDrawer
-            key={selected.id}
+            key={`${selected.id}:${editor.deleteOnOpen}`}
+            initialDeleting={editor.deleteOnOpen}
             open
             form={editor.form}
             categories={data.categories}
@@ -54,6 +56,11 @@ export function EntryDetail({
               </button>
             )}
           >
+            {selected.source === 'ai' && (
+              <div className="entry-source-detail">
+                <EntrySourceBadge source={selected.source} />
+              </div>
+            )}
             <p className="num break-words text-3xl">
               {selected.kind === 'expense' ? '−' : '+'} ¥ {money(selected.amountMinor)}
             </p>

@@ -12,4 +12,6 @@
 
 验证：认证前两端均不渲染导航；ready 时每端只注入一套导航，见 tests/frontend/navigation.test.ts。
 
+useTabLinks 将二级设置页归属「我们」高亮；再次点击「我们」返回一级页面，不覆盖一级页面的地址记忆。
+
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md

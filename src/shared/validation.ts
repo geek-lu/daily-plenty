@@ -1,4 +1,4 @@
-/** [INPUT]: Zod、分类图标与删除原因白名单。[OUTPUT]: 输入约束，含高级筛选及日/月/年统计范围。[POS]: 边界校验，不含权限判断。
+/** [INPUT]: Zod、分类图标与删除原因白名单。[OUTPUT]: 输入约束，含 API 显式录入/修改人、高级筛选及日/月/年统计范围。[POS]: 边界校验，不含权限判断。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
 import { z } from 'zod';
 import { categoryIconIds } from './category-icons';
@@ -35,6 +35,7 @@ export const entryInput = z.object({
   occurredOn: date,
 });
 export const createEntryInput = entryInput.extend({ requestId: uuid }).strict();
+export const createApiEntryInput = createEntryInput.extend({ recordedByMemberId: uuid });
 export const categoryInput = z
   .object({
     name,
@@ -46,6 +47,7 @@ export const templateInput = entryInput.omit({ occurredOn: true }).extend({ name
 export const updateEntryInput = entryInput
   .extend({ version: z.number().int().positive(), requestId: uuid })
   .strict();
+export const updateApiEntryInput = updateEntryInput.extend({ updatedByMemberId: uuid });
 const mutationIdentity = { version: z.number().int().positive(), requestId: uuid };
 export const deleteInput = z.discriminatedUnion('deleted', [
   z

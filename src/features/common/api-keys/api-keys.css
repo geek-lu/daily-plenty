@@ -1,0 +1,407 @@
+/* [INPUT]: MUJI 颜色/控件令牌及 AppShell 设备标记。
+ * [OUTPUT]: 一体式生成/管理面板、成功视图、轻量密钥行与折叠教程。
+ * [POS]: common/api-keys 共享设置页；手机自然单列，PC 按现有设备边界分栏。
+ * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
+.api-keys-page {
+  max-width: 1160px;
+}
+.api-keys-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-muted);
+  font-size: 12px;
+}
+.api-keys-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+}
+.api-keys-back:hover {
+  color: var(--color-accent);
+}
+.api-keys-back-icon {
+  transform: rotate(180deg);
+}
+.api-keys-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-block: 16px 32px;
+}
+.api-keys-header h1 {
+  font-size: 32px;
+  line-height: 1.3;
+}
+.api-keys-header p {
+  margin-top: 12px;
+  color: var(--color-muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+.api-keys-shared {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--color-muted);
+}
+.api-keys-workspace {
+  display: grid;
+  min-width: 0;
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+  background: var(--color-surface);
+  overflow: hidden;
+}
+.api-keys-create,
+.api-keys-list-panel {
+  padding: 24px;
+  min-width: 0;
+}
+.api-keys-create {
+  border-bottom: 1px solid var(--color-line);
+}
+.api-keys-symbol {
+  display: inline-flex;
+  padding: 12px;
+  margin-bottom: 24px;
+  border-radius: 8px;
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+.api-keys-page h2 {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.api-keys-description,
+.api-keys-list-header p {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--color-muted);
+}
+.api-keys-form {
+  display: grid;
+  gap: 24px;
+  margin-top: 24px;
+}
+.api-keys-form .label {
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--color-ink);
+}
+.api-keys-form .field {
+  background: var(--color-surface);
+}
+.api-keys-form > .btn,
+.api-key-secret > .btn {
+  min-height: 48px;
+  font-size: 14px;
+}
+.api-keys-field-help {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--color-muted);
+}
+.api-keys-scope {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-line);
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--color-muted);
+}
+.api-keys-list-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.api-keys-count {
+  flex-shrink: 0;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: var(--color-paper);
+  color: var(--color-muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.api-keys-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 64px 0;
+  text-align: center;
+}
+.api-keys-empty-icon {
+  display: inline-flex;
+  padding: 16px;
+  margin-bottom: 24px;
+  border: 1px dashed var(--color-line);
+  border-radius: 12px;
+  background: var(--color-paper);
+  color: var(--color-muted);
+}
+.api-keys-empty h3 {
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+.api-keys-empty p,
+.api-keys-loading {
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--color-muted);
+}
+.api-keys-empty > span:last-child {
+  margin-top: 24px;
+  font-size: 12px;
+  color: var(--color-muted);
+}
+.api-keys-loading {
+  padding-block: 32px;
+}
+.api-keys-list {
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.api-keys-list:empty {
+  margin: 0;
+}
+.api-keys-list > li {
+  padding-block: 24px;
+  border-top: 1px solid var(--color-line);
+}
+.api-keys-list > li:last-child {
+  padding-bottom: 0;
+}
+.api-key-heading,
+.api-key-name,
+.api-key-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.api-key-heading,
+.api-key-footer {
+  justify-content: space-between;
+}
+.api-key-name {
+  min-width: 0;
+}
+.api-key-name h3 {
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  font-weight: 600;
+}
+.api-key-icon {
+  flex-shrink: 0;
+  color: var(--color-muted);
+}
+.api-key-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--color-ink);
+}
+.api-key-status::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.api-keys-list > li[data-revoked='true'] :is(.api-key-name, .api-key-status) {
+  color: var(--color-muted);
+}
+.api-key-info {
+  margin: 12px 0 0 32px;
+  overflow-wrap: anywhere;
+}
+.api-key-ledger {
+  font-size: 12px;
+  color: var(--color-muted);
+}
+.api-key-prefix {
+  display: inline-block;
+  padding: 4px 8px;
+  margin-block: 8px;
+  border-radius: 4px;
+  background: var(--color-paper);
+  font-size: 12px;
+  letter-spacing: 0.03em;
+}
+.api-key-meta,
+.api-key-footer > p {
+  font-size: 11px;
+  line-height: 1.8;
+  color: var(--color-muted);
+  overflow-wrap: anywhere;
+}
+.api-key-footer {
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 8px 0 0 32px;
+}
+.api-key-revoke {
+  min-height: 44px;
+  padding: 8px;
+  margin-right: -8px;
+  color: var(--color-muted);
+  font-size: 12px;
+}
+.api-key-revoke:hover {
+  color: var(--color-accent);
+}
+.api-key-confirm {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 8px;
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-size: 13px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.api-keys-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.api-keys-actions .btn {
+  font-size: 12px;
+}
+.api-key-secret {
+  display: grid;
+  gap: 12px;
+  margin-top: 24px;
+}
+.api-key-secret-context {
+  display: grid;
+  gap: 4px;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+}
+.api-key-secret-context span,
+.api-key-secret > p {
+  color: var(--color-muted);
+  font-size: 12px;
+  line-height: 1.8;
+}
+.api-key-secret textarea {
+  font-family: monospace;
+  font-size: 14px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+  resize: vertical;
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent);
+}
+.api-keys-notice {
+  margin-block: 16px;
+  padding: 12px 16px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: var(--color-surface);
+  font-size: 13px;
+  line-height: 1.7;
+}
+.api-keys-help {
+  margin-top: 24px;
+  border-block: 1px solid var(--color-line);
+}
+.api-keys-help summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-block: 24px;
+  list-style: none;
+  cursor: pointer;
+  font-size: 13px;
+}
+.api-keys-help summary::-webkit-details-marker {
+  display: none;
+}
+.api-keys-help summary:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 4px;
+}
+.api-keys-help summary strong {
+  font-weight: 500;
+}
+.api-keys-help-caption {
+  display: block;
+  margin-top: 4px;
+  color: var(--color-muted);
+  font-size: 12px;
+}
+.api-keys-help-arrow {
+  color: var(--color-muted);
+}
+.api-keys-help[open] .api-keys-help-arrow {
+  transform: rotate(90deg);
+}
+.api-keys-help-body {
+  padding-bottom: 24px;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.api-keys-help ol {
+  display: grid;
+  gap: 16px;
+  padding-left: 24px;
+  list-style: decimal-leading-zero;
+}
+.api-keys-help li {
+  padding-left: 8px;
+}
+.api-keys-help li::marker {
+  color: var(--color-muted);
+  font-size: 11px;
+}
+.api-keys-help li p {
+  margin-top: 4px;
+  color: var(--color-muted);
+}
+.api-keys-help dl {
+  display: grid;
+  gap: 16px;
+  margin-top: 24px;
+  padding: 16px;
+  border-radius: 8px;
+  background: var(--color-surface);
+}
+.api-keys-help dt {
+  color: var(--color-muted);
+  font-size: 12px;
+}
+.api-keys-help code {
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+.app-shell[data-device='pc'] .api-keys-workspace {
+  grid-template-columns: minmax(280px, 0.85fr) minmax(0, 1.25fr);
+}
+.app-shell[data-device='pc'] .api-keys-create {
+  border-bottom: 0;
+  border-right: 1px solid var(--color-line);
+}
+.app-shell[data-device='pc'] .api-keys-help dl {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.app-shell[data-device='m'] .api-key-secret textarea {
+  font-size: 16px;
+}

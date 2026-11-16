@@ -1,22 +1,43 @@
 /**
  * [INPUT]: NextRequest、数据库/会话上下文及公共错误类型。
- * [OUTPUT]: HTTP handler 契约、JSON 解析、认证包装与统一错误响应。
+ * [OUTPUT]: HTTP handler 契约、JSON 解析、默认仅会话/显式开放密钥的认证包装、绑定账本约束与统一错误响应。
  * [POS]: server/http 边界基础；不承载账户或账单业务。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
 import type { NextRequest, NextResponse } from 'next/server';
 import { ZodError } from 'zod';
 import type { Store } from '../db/client';
-import { AppError } from '@/shared/errors';
-import { actor, json } from './context';
+import { AppError, ensure } from '@/shared/errors';
+import { actor, ledgerActor, json } from './context';
+import type { LedgerPrincipal } from '../ledger/access';
 
 export type RequestContext = { request: NextRequest; store: Store; params: Record<string, string> };
 export type Handler = (context: RequestContext) => NextResponse | Promise<NextResponse>;
 export type Route = { method: string; path: string; handle: Handler };
-type SessionContext = RequestContext & { userId: string; token: string | null };
+type SessionContext = RequestContext & {
+  userId: string;
+  token: string | null;
+};
 
 export function authenticated(handle: (context: SessionContext) => ReturnType<Handler>): Handler {
-  return async (context) => handle({ ...context, ...(await actor()) });
+  return (context) => handle({ ...context, ...actor(context.request, context.store) });
+}
+
+export function ledgerAuthenticated(
+  handle: (context: RequestContext & { principal: LedgerPrincipal }) => ReturnType<Handler>,
+): Handler {
+  return (context) => {
+    const principal = ledgerActor(context.request, context.store);
+    ensure(
+      typeof principal === 'string' ||
+        !context.params.ledgerId ||
+        principal.ledgerId === context.params.ledgerId,
+      403,
+      '这枚 API 密钥只能访问绑定的账本',
+      'LEDGER_SCOPE_MISMATCH',
+    );
+    return handle({ ...context, principal });
+  };
 }
 
 export async function body(request: NextRequest): Promise<Record<string, unknown>> {

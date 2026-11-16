@@ -11,4 +11,6 @@
 
 - TogetherPage.tsx 嵌入 ui/pwa/InstallCard，提供添加到桌面入口与 iPhone/其他浏览器指引。
 
+TogetherPage.tsx 的账号区新增 /together/api-keys 入口，保留当前账本参数。
+
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md

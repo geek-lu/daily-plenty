@@ -41,7 +41,7 @@ export function BottomBar() {
             )}
             <Link
               href={tab.href}
-              onClick={stayOnActive(tab.active)}
+              onClick={stayOnActive(tab.currentPage)}
               className="app-tab"
               aria-current={tab.active ? 'page' : undefined}
             >

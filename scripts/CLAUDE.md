@@ -24,4 +24,6 @@ check-routes 额外检查安装清单、四个 PNG、Apple 元数据、离线页
 四页 HTML 同时验证 maximum-scale=1 与 user-scalable=no 的 viewport 输出。
 check-routes 验证 /config 未登录 404，登录后 200 且 password_hash 打码、不含 scrypt 原文。
 
+check-routes 验证 /together/api-keys、Cookie 生成绑定账本密钥、Bearer 账本列表收窄、录入人候选与显式录入/付款人分离、记账幂等、按 ID 查询/修改 AI 账单、版本冲突与拒绝修改人工账单、禁止密钥管理、退出网页后密钥仍可用以及撤销后 401。
+
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md

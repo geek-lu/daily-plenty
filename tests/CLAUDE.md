@@ -24,6 +24,12 @@
 navigation.test.ts 同时用真实 JSX runtime 遍历明细页已加载状态的兄弟元素，验证 key 唯一；还原旧写法确认回归测试能捕捉用户报告的重复 key。
 navigation.test.ts 验证 Collapse 的 inert/aria-hidden 与草稿保留、Presence 初始显隐，并扫描正式 features/ui 禁止手工增删节点、写 innerHTML/classList/style。
 
-- comments.test.ts：活跃成员/读写权限、跨账本/账单隔离、持续回复平铺、输入边界、幂等冲突与事务回滚、0007 旧库升级及重开、真实 HTTP router 契约回归。preferences.test.ts 迁移数量同步为 7。
+- comments.test.ts：活跃成员/读写权限、跨账本/账单隔离、持续回复平铺、输入边界、幂等冲突与事务回滚、0007 旧库升级及重开、真实 HTTP router 契约回归。preferences.test.ts / comments.test.ts 迁移数量同步为 10。
+
+- api-keys.test.ts：共享密钥摘要存储和 editor 共同管理、账本隔离、生成者退出/禁用不影响密钥、录入人资格与付款人分离、账本级幂等、撤销/归档及 Cookie 边界；0009 旧库升级撤销个人凭据与重开验证；AI 修改的版本/操作者、来源限制、单条查询、跨操作/目标幂等冲突、换密钥重试与人工修正后的旧响应重放。
+
+- skills/：可移植记账 CLI 的 Python 标准库集成测试；金额、HTTP、候选、持久化与幂等恢复，运行 pnpm test:skill。
+
+- entry-source.test.ts：人工/API 渠道来源、拒绝伪造、人工修正 AI 账单并保留来源、CSV 来源列及 0010 历史数据/幂等响应默认人工的升级重开回归。
 
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md

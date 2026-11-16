@@ -1,29 +1,33 @@
-/** [INPUT]: 本域仓储/CSV 编码、共享校验与日期规则、事务上下文。[OUTPUT]: 授权账本查询、日/月/年统计与初始化。[POS]: ledger 业务规则。
+/** [INPUT]: 本域授权/仓储/CSV 编码、共享校验与日期规则、事务上下文。[OUTPUT]: 授权账本/单条账单查询、录入人候选、日/月/年统计与初始化。[POS]: ledger 业务规则。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
 import { randomUUID } from 'node:crypto';
 import { defaultCategoryIcon } from '@/shared/category-icons';
 import { entryCsvHeader, entryCsvRow } from './csv';
 import type { Store } from '../db/client';
 import { ensure } from '@/shared/errors';
-import { filterInput, reportInput } from '@/shared/validation';
+import { filterInput, reportInput, uuid } from '@/shared/validation';
 import { completeReportPoints, reportRange } from '@/shared/report';
 import { today } from '@/shared/money';
 import type { Entry, EntryInput, Filters, ReportData } from '@/shared/types';
 import * as repo from './repo';
-export function authorize(
-  store: Store,
-  actorId: string,
-  ledgerId: string,
-  write = false,
-  owner = false,
-) {
-  const access = repo.access(store, actorId, ledgerId);
-  ensure(access && !access.ledger.archivedAt, 403, '你没有这个账本的访问权限');
-  ensure(!write || access.member.role === 'editor', 403, '当前成员只能查看账单');
-  ensure(!owner || access.ledger.ownerUserId === actorId, 403, '只有账本创建者可以管理邀请');
-  return access;
+import { authorize, authorizeRead, type LedgerPrincipal } from './access';
+export { authorize } from './access';
+export function listLedgers(store: Store, principal: LedgerPrincipal) {
+  return typeof principal === 'string'
+    ? repo.listLedgers(store, principal)
+    : [authorizeRead(store, principal, principal.ledgerId)];
 }
-export const listLedgers = repo.listLedgers;
+export function listRecorders(store: Store, principal: LedgerPrincipal, ledgerId: string) {
+  authorizeRead(store, principal, ledgerId);
+  return repo.recorders(store, ledgerId);
+}
+export function getEntry(store: Store, principal: LedgerPrincipal, ledgerId: string, id: string) {
+  uuid.parse(id);
+  authorizeRead(store, principal, ledgerId);
+  const entry = repo.entry(store, ledgerId, id);
+  ensure(entry && !entry.deletedAt, 404, '这笔账单已不存在，请刷新');
+  return entry;
+}
 export function createHome(store: Store, userId: string, name: string) {
   const id = randomUUID();
   repo.insertLedger(store, { id, name, ownerUserId: userId });
@@ -81,8 +85,8 @@ export function validateLinks(
     '请选择此账本内有效的付款人',
   );
 }
-export function query(store: Store, actorId: string, ledgerId: string, raw: unknown) {
-  const access = authorize(store, actorId, ledgerId);
+export function query(store: Store, principal: LedgerPrincipal, ledgerId: string, raw: unknown) {
+  const ledger = authorizeRead(store, principal, ledgerId);
   const filters = filterInput.parse(raw);
   ensure(!filters.cursor || /^\d+$/.test(filters.cursor), 400, '分页标识无效');
   const rows = repo.listEntries(store, ledgerId, filters, filters.cursor);
@@ -95,24 +99,24 @@ export function query(store: Store, actorId: string, ledgerId: string, raw: unkn
     '统计金额超出安全范围',
   );
   return {
-    ledger: { ...access.ledger, role: access.member.role },
+    ledger,
     entries,
     members: repo.members(store, ledgerId),
     categories: repo.categoryList(store, ledgerId),
-    templates: repo.templateList(store, ledgerId, actorId),
+    templates: typeof principal === 'string' ? repo.templateList(store, ledgerId, principal) : [],
     summary,
     nextCursor: rows.length > 50 && last ? `${last.rowid}` : null,
   };
 }
 export function queryReport(
   store: Store,
-  actorId: string,
+  principal: LedgerPrincipal,
   ledgerId: string,
   raw: unknown,
 ): ReportData {
   const filters = reportInput.parse(raw);
   return store.sqlite.transaction(() => {
-    const access = authorize(store, actorId, ledgerId);
+    const ledger = authorizeRead(store, principal, ledgerId);
     const range = reportRange(filters);
     const summary = repo.summaryBetween(store, ledgerId, range);
     const rows = repo.reportPoints(store, ledgerId, filters.granularity, range);
@@ -123,17 +127,13 @@ export function queryReport(
       422,
       '统计金额超出安全范围',
     );
-    const points = completeReportPoints(
-      filters,
-      rows,
-      Number(today(access.ledger.timezone).slice(0, 4)),
-    );
+    const points = completeReportPoints(filters, rows, Number(today(ledger.timezone).slice(0, 4)));
     const dates =
       filters.granularity === 'year'
         ? { start: `${points[0].period}-01-01`, end: `${points.at(-1)!.period}-12-31` }
         : range;
     return {
-      ledger: { ...access.ledger, role: access.member.role },
+      ledger,
       granularity: filters.granularity,
       ...dates,
       summary,

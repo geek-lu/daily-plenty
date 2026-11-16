@@ -1,4 +1,4 @@
-/** [INPUT]: 账单规则、仓储、事务与请求校验。[OUTPUT]: 幂等新增/修改/带原因软删除/恢复。[POS]: ledger 写入流程。
+/** [INPUT]: 账单规则、仓储、事务与请求校验。[OUTPUT]: 人工新增及幂等修改/软删除/恢复，修改保留原始来源。[POS]: ledger 写入流程。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
 import { createHash, randomUUID } from 'node:crypto';
 import { atomic, type Store } from '../db/client';
@@ -42,7 +42,14 @@ export function createEntry(store: Store, actorId: string, ledgerId: string, raw
   return mutate(store, actorId, ledgerId, requestId, 'create', value, () => {
     validateLinks(store, ledgerId, value);
     const id = randomUUID();
-    repo.insertEntry(store, { ...value, id, ledgerId, createdBy: actorId, updatedBy: actorId });
+    repo.insertEntry(store, {
+      ...value,
+      id,
+      ledgerId,
+      source: 'manual',
+      createdBy: actorId,
+      updatedBy: actorId,
+    });
     return repo.entry(store, ledgerId, id)!;
   });
 }

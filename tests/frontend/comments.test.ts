@@ -21,11 +21,19 @@ function load(file: string, imports: Record<string, unknown>) {
     ts.transpileModule(source, {
       compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.CommonJS },
     }).outputText,
-    { exports, require: (name: string) => imports[name] },
+    {
+      exports,
+      require: (name: string) => imports[name],
+    },
   );
   return exports;
 }
 const { Collapse } = load('../../../ui/motion.tsx', { react, 'react/jsx-runtime': jsx });
+
+const { EntrySourceBadge } = load('../ui/EntrySourceBadge.tsx', {
+  'react/jsx-runtime': jsx,
+  './entry-source.css': {},
+});
 
 const comment = (id: string, rootId: string | null = null): EntryComment => ({
   id,
@@ -173,11 +181,13 @@ test('entry list keeps comment action separate and expands discussions by defaul
     'react/jsx-runtime': jsx,
     '@/shared/money': { money: () => '12.00' },
     './CategoryIcon': { CategoryIcon: () => null },
+    './EntrySourceBadge': { EntrySourceBadge },
     '../comments/EntryComments': {
       EntryComments: () => react.createElement('section', null, '默认评论区'),
     },
     './entry-item.css': {},
     '@/ui/motion': { Collapse },
+    '@/ui/SwipeReveal': { SwipeReveal: ({ children }: { children: react.ReactNode }) => children },
   });
   const html = renderToStaticMarkup(
     react.createElement(EntryRow, {
@@ -190,6 +200,7 @@ test('entry list keeps comment action separate and expands discussions by defaul
         categoryName: '餐饮',
         payerName: '甲',
         creatorName: '乙',
+        source: 'ai',
       },
       onEdit: () => {},
       canWrite: true,
@@ -202,6 +213,8 @@ test('entry list keeps comment action separate and expands discussions by defaul
   assert.match(html, /写评论/);
   assert.equal((html.match(/餐饮/g) || []).length, 1);
   assert.match(html, /entry-item-note/);
+  assert.match(html, /data-source="ai"/);
+  assert.match(html, /AI 记录/);
   assert.match(html, /2026-11-13 · 付款人 · 甲/);
   assert.ok(html.indexOf('class="entry-item-meta"') < html.indexOf('class="entry-item-note"'));
   assert.doesNotMatch(html, /乙记/);
@@ -217,6 +230,7 @@ test('records comments remain collapsed while mounted for the external count', (
     'react/jsx-runtime': jsx,
     '@/shared/money': { money: () => '12.00' },
     './CategoryIcon': { CategoryIcon: () => null },
+    './EntrySourceBadge': { EntrySourceBadge },
     '../comments/EntryComments': {
       EntryComments: () => {
         return react.createElement('section', null, '已查询评论');
@@ -224,6 +238,7 @@ test('records comments remain collapsed while mounted for the external count', (
     },
     './entry-item.css': {},
     '@/ui/motion': { Collapse },
+    '@/ui/SwipeReveal': { SwipeReveal: ({ children }: { children: react.ReactNode }) => children },
   });
   const html = renderToStaticMarkup(
     react.createElement(EntryRow, {
@@ -234,9 +249,19 @@ test('records comments remain collapsed while mounted for the external count', (
     }),
   );
   assert.match(html, /展开评论/);
+  assert.doesNotMatch(html, /人工记录|entry-source-badge/);
   assert.match(html, /entry-comment-count/);
   assert.match(html, /已查询评论/);
   assert.match(html, /aria-expanded="false"/);
   assert.match(html, /aria-hidden="true"/);
   assert.match(html, /inert=""/);
+});
+
+test('only AI has a visible badge; manual and legacy entries leave no label', () => {
+  for (const source of ['manual', undefined]) {
+    assert.equal(renderToStaticMarkup(react.createElement(EntrySourceBadge, { source })), '');
+  }
+  const html = renderToStaticMarkup(react.createElement(EntrySourceBadge, { source: 'ai' }));
+  assert.match(html, />AI<\/span>/);
+  assert.match(html, /aria-label="AI 记录"/);
 });

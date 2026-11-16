@@ -166,7 +166,7 @@ test('pagination is stable for all four orders; totals and export include every 
     const lines = csv.split('\r\n').slice(1);
     assert.equal(lines.length, 65);
     assert.deepEqual(
-      lines.map((line) => line.split(',').at(-1)),
+      lines.map((line) => line.split(',').at(-2)),
       expected.map((e) => `"${e.note}"`),
     );
   }

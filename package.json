@@ -19,6 +19,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test:scripts": "node --test scripts/*.test.mjs deploy/scripts/*.test.mjs deploy/config/*.test.mjs",
+    "test:skill": "python3 -B -m unittest discover -s tests/skills -p 'test_*.py'",
     "check:architecture": "node scripts/check-architecture.mjs"
   },
   "dependencies": {

@@ -10,6 +10,7 @@ const paths = {
   calendar:
     'M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z M7 3v4 M17 3v4 M3 11h18 M7 15h2 M13 15h2',
   plus: 'M12 5v14 M5 12h14',
+  key: 'M14 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0 M10 11v10 M10 16h4 M10 20h3',
   close: 'm6 6 12 12 M18 6 6 18',
   arrow: 'm9 5 7 7-7 7',
 } as const;

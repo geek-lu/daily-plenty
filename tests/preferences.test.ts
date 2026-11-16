@@ -243,7 +243,7 @@ test('migration upgrades existing data and templates survive database reopening'
   migrate(sqlite, dir);
   // 让当前仓储构造旧版夹具，升级前移除新字段以验证真实 ALTER。
   sqlite.exec(
-    "ALTER TABLE categories ADD COLUMN icon TEXT NOT NULL DEFAULT 'tag'; ALTER TABLE entries ADD COLUMN delete_reason TEXT; ALTER TABLE entries ADD COLUMN delete_reason_note TEXT",
+    "ALTER TABLE categories ADD COLUMN icon TEXT NOT NULL DEFAULT 'tag'; ALTER TABLE entries ADD COLUMN delete_reason TEXT; ALTER TABLE entries ADD COLUMN delete_reason_note TEXT; ALTER TABLE entries ADD COLUMN source TEXT NOT NULL DEFAULT 'manual'",
   );
   const oldStore: Store = { sqlite, db: drizzle(sqlite, { schema }) };
   const { owner, ledgerId, input } = fixture(oldStore);
@@ -272,7 +272,7 @@ test('migration upgrades existing data and templates survive database reopening'
     kind: 'expense',
   });
   sqlite.exec(
-    'ALTER TABLE categories DROP COLUMN icon; ALTER TABLE entries DROP COLUMN delete_reason; ALTER TABLE entries DROP COLUMN delete_reason_note',
+    'ALTER TABLE categories DROP COLUMN icon; ALTER TABLE entries DROP COLUMN delete_reason; ALTER TABLE entries DROP COLUMN delete_reason_note; ALTER TABLE entries DROP COLUMN source',
   );
   sqlite.prepare('UPDATE entries SET deleted_at = ? WHERE id = ?').run('2026-11-01', entry.id);
   sqlite.close();
@@ -315,7 +315,7 @@ test('migration upgrades existing data and templates survive database reopening'
     assert.equal(repo.entry(reopened, ledgerId, entry.id)?.amountMinor, 2500);
     assert.equal(
       (reopened.sqlite.prepare('SELECT count(*) n FROM _migrations').get() as { n: number }).n,
-      7,
+      10,
     );
   } finally {
     reopened.sqlite.close();

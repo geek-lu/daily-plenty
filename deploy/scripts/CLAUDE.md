@@ -8,6 +8,6 @@
 - healthcheck.mjs：有限重试 setup/status，检查真实接口/数据库可用性。
 - check.test.mjs：临时 SQLite WAL 备份/缺失源库与原生编译环境传递、缺失工具链预检回归，不接触生产数据。
 - remote.sh：本机 Makefile 的 SSH 编排；传递 http/tunnel/https 模式，串行打包/上传/发布，复用登录、引用参数，失败中止并保留远端源码。
-- remote.test.mjs：模拟 SSH/系统命令运行真实 Makefile、打包和解压，验证 deploy/update 均完整携带 0007 评论迁移、失败边界、密钥空格、端口、Swap 及部署顺序。
+- remote.test.mjs：模拟 SSH/系统命令运行真实 Makefile、打包和解压，验证 deploy/update 均完整携带 0007 评论、0008 旧密钥及 0009 账本共享密钥和 0010 数据来源迁移、失败边界、密钥空格、端口、Swap 及部署顺序。
 
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md

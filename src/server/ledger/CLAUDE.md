@@ -2,8 +2,8 @@
 
 > L2 | 父级: ../CLAUDE.md
 
-- repo.ts：账本、分类、模板、成员及账单的数据访问；模板查询和写入始终限定用户及账本。
-- service.ts：账本授权、初始化、关联校验、查询与导出；聚合数据只包含当前用户模板。
+- repo.ts：账本、分类、模板、成员及账单的数据访问；keyLedger 检查密钥/账本，recorders 筛选有效 editor，apiMutation/saveApiMutation 记录账本级请求；模板查询和写入始终限定用户及账本。
+- service.ts：账本初始化、关联校验、查询与导出，listRecorders 提供候选、getEntry 按 ID 查询未删除账单；会话查询只含本人模板，密钥查询模板为空。
 - repo.ts / service.ts 的统计路径：reportPoints 按账单日期 SQL 分组，summaryBetween 使用同一范围汇总；queryReport 在只读快照中鉴权、补零和校验整数金额，不受明细分页限制。年维度覆盖最早账单至当前/最后账单所在年，收入不计入支出折线，软删除排除。
 - 新建账本内置 12 个支出分类和 6 个收入分类；旧账本由 0003 迁移补齐，保留自定义分类。
 - 0004 迁移同步支出分类调整：房租 → 房贷，其他 → 服饰；普通重命名保留分类 ID，同名冲突合并关联。
@@ -22,5 +22,11 @@
 
 - comments.ts：评论服务；活跃 editor 写、viewer 读，已删除账单禁止访问；trim 1–1000，回复永远归主评论，复用账本/用户/requestId 幂等事务。
 - comments-repo.ts：同账本/账单评论仓储，实时关联作者与回复对象姓名，createdAt + rowid 升序全量读取。
+
+- access.ts：区分会话用户与账本共享密钥，读取前校验账本范围/撤销状态；共享密钥不获取个人模板。
+- api-entries.ts：共享密钥显式 recordedByMemberId 录入、updatedByMemberId 修改；服务端仅允许编辑 source=ai，保留来源/创建人并检查版本；活跃 editor 候选来自 recorders，账本/requestId 统一幂等并审计 keyId；修改指纹含操作/目标 ID/版本/内容，创建指纹兼容已发布旧请求。
+  GET /ledgers/:ledgerId/recorders 返回未离开、未禁用的可记账成员 memberId/userId/displayName，供 agent 推断录入人。
+
+账单来源：entries.createEntry 固定 manual，api-entries.createApiEntry 固定 ai；严格输入拒绝客户端伪造 source，编辑/删除/恢复保留原始来源。CSV 末列输出数据来源。
 
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md

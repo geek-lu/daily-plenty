@@ -12,9 +12,10 @@ daily-plenty/
 │   ├── server/       http 路由表 → flows 跨域协调 → user/auth/ledger 服务 → db
 │   ├── shared/       类型、金额、日期、分类图标、删除原因及输入校验
 │   └── ui/           声明式动效、触摸手势与浏览器下载适配
-├── migrations/       0001–0006 已发布迁移，0007 账单评论增量迁移；禁止改动已应用 SQL 内容
+├── migrations/       0001–0009 历史迁移，0010 账单来源增量迁移；禁止改动已应用 SQL 内容
 ├── tests/            服务/HTTP 回归，frontend/ 表单重试与导航回归
 ├── scripts/          迁移/备份/可选配置、架构和生产路由检查
+├── skills/           可移植的 agent HTTP 记账技能；地址与凭据由宿主外部配置
 ├── deploy/           Alibaba Cloud Linux 3 发布、访问模式配置、systemd、备份
 └── docs/             DESIGN、REFACTOR、HISTORY 与离线 HTML 评审
 ```
@@ -23,7 +24,7 @@ daily-plenty/
 
 ## 边界
 
-- 四页固定为 `/`、`/reports`、`/records`、`/together`。≥1024px 渲染 features/pc（左侧边栏 + 右内容区、列表优先），否则渲染 features/m（底栏）；断点只在 common/session/Adaptive 定义。pc/ 与 m/ 只依赖 common/、互不导入，架构检查强制。“记一笔”打开全局抽屉（PC 为右侧面板），不切页。MUJI 简约风格。
+- 四个一级页面为 `/`、`/reports`、`/records`、`/together`；`/together/api-keys` 为账本共享密钥二级设置。≥1024px 渲染 features/pc（左侧边栏 + 右内容区、列表优先），否则渲染 features/m（底栏）；断点只在 common/session/Adaptive 定义。pc/ 与 m/ 只依赖 common/、互不导入，架构检查强制。“记一笔”打开全局抽屉（PC 为右侧面板），不切页。MUJI 简约风格。
 - UI（pc/ m/）→ common runtime → commands/api；金额、表单映射等纯规则不依赖 React。`common/editor` 共用表单、提交锁和请求身份，页面只协调开关、提示与刷新。
 - App API → http/router → account/ledger 路由表 → flows/service → repo → SQLite。HTTP 统一解析 JSON 和会话；服务重新校验权限与数据；跨 user/auth/ledger 的账号创建和邀请加入由 flows 协调事务。
 - User / Ledger / Membership 多对多；Category 属于账本，Template 属于用户和账本。查询不得泄露另一位成员的个人模板；历史关联与软删除保留财务数据。
@@ -41,6 +42,7 @@ pnpm check:architecture
 pnpm check
 pnpm test
 pnpm test:scripts
+pnpm test:skill
 DAILY_PLENTY_LOW_MEMORY_BUILD=true NODE_OPTIONS=--max-old-space-size=1280 pnpm build
 pnpm check:routes
 ```
@@ -54,6 +56,8 @@ pnpm check:routes
 2026-11-12 整改：统一格式和显式 if/else 块，抽取公共录入与 CSV，拆分 API 路由/账号流程、筛选面板/结果区、模板组件和邀请视图/runtime；配置脚本保留已有设置；更新地图和离线 HTML。33 项应用测试、3 项脚本测试、严格类型、生产构建与真实 Next 路由检查通过；具体证据与未完成验证见 docs/REFACTOR.md。
 
 历史变更记录迁入 docs/HISTORY.md。未触碰用户数据库或执行远程部署。
+
+2026-11-16 Agent 记账：skills/daily-plenty-bookkeeping 采用短 SKILL.md 索引、Python 3.9+ 标准库 CLI 和按需参考。模型识别意图和成员，脚本处理 API Key 鉴权、精确金额/日期、context/prepare/submit/status/entries 与持久化幂等重试；服务器地址、凭据和操作状态均在技能目录外。接口变化同步脚本、HTTP.md 与 commands.md；pnpm test:skill 验证真实 CLI 与临时 HTTP 服务。
 
 新增 public/ 桌面图标、Service Worker 与断网提示；src/ui/pwa 提供全局安装事件和「我们」页安装入口，app/manifest.ts 输出安装清单。缓存仅含公共离线说明，财务数据不缓存；手机完整安装需可访问的 HTTPS 地址。本轮 36 项应用测试、3 项脚本测试、类型/架构/格式、生产构建与路由检查通过；实机边界见 docs/PWA.md。
 
@@ -76,5 +80,19 @@ PC/手机分端：features 拆为 common/pc/m；PC 侧边栏、明细常驻筛�
 2026-11-13 列表交互：PC 首页/明细移除 EntryTable，PC 与手机复用 EntryRow；每项右侧评论按钮在下方展开评论和持续回复，编辑抽屉不再承载评论。PC 维持内部滚动与无限加载。
 
 2026-11-13 部署地址本地化：服务器公网 IP 从 Makefile/remote.sh/文档移出，改由根目录 deploy.local.mk（gitignore、不进源码包）提供；未配置 SSH_HOST 时拒绝连接。测试/文档使用 RFC 5737 地址 203.0.113.10 或 <服务器IP> 占位。
+
+2026-11-16 账本共享 API 密钥：我们页进入二级设置，可记账成员共同生成、查看元数据和撤销该账本的密钥。密钥只归账本，createdBy 仅审计生成者；撤销或账本归档后失效。0009 将旧个人凭据撤销并转换元数据，升级后需重新生成共享密钥；保留 0008 内容和既有财务数据。Bearer 开放绑定账本、录入人、账单、统计查询和新增账单，并允许按 ID 修改 AI 来源账单，不暴露账户或个人模板。GET /api/ledgers/:ledgerId/recorders 返回有效 editor 的 memberId/userId/displayName；Agent 根据对话填写 recordedByMemberId，服务端重验后确定 createdBy，付款人独立。ledger_api_requests 按账本/requestId 幂等并记录 keyId，换密钥重试不会重复写入。UI → common/api-keys/runtime → api；auth/api-keys → api-key-repo → db。
+
+API 密钥验证：55 项应用测试、10 项脚本测试、类型/架构/格式、生产构建、HTTP/HTTPS 两种配置的生产路由检查及 skill 校验通过。覆盖跨账本拒绝、共享管理、录入人资格、付款人分离、账本幂等、旧库升级、撤销与一次性显示；无可连接浏览器，真实页面视觉与交互尚未验收。未连接生产服务器或执行部署。
+
+2026-11-16 数据来源：0010 为全部历史账单和幂等响应补齐 manual；后续网页记录为人工、API 记录为 AI，编辑/删除/恢复保留原始来源。两端列表、详情和 CSV 展示来源，可记账成员通过原有编辑入口修正 AI 账单。密钥页改为一体式主面板、成功视图与折叠教程。57 项应用测试、10 项脚本测试、类型/架构/格式和生产构建通过；未连接生产服务器。浏览器连接不可用，实际视觉仍待验收。
+
+2026-11-16 左滑删除：两端首页和明细共用 ui/SwipeReveal，左滑露出删除按钮后进入既有原因确认；保留版本校验和幂等提交，AI/人工均可由可记账成员删除。方向锁保留纵向滚动，拖动后点击隔离，支持鼠标和键盘；不新增迁移。完整功能此前通过 63 项应用测试、类型/架构/格式检查、生产构建及 HTTP 模式生产路由检查；方向调整为左滑后，6 项交互回归、类型/架构与改动文件格式检查通过；浏览器连接不可用，未验证手机实机手感，未部署。
+
+2026-11-16 鼠标左滑手感：按下由原元素捕获、横拖后容器接管，防止移出边界丢事件并保留普通点击；6px 起拖、28px 吸附，斜向起步不提前锁死，修复子元素捕获转移误取消，禁止文字选取/原生拖放并显示抓取光标。首页/明细仅增加金额元素右侧 12px 外边距，卡片及其余内容恢复原有间距。66 项应用测试、类型/架构及改动文件格式检查、生产构建通过。浏览器连接仍不可用，实际视觉和手感待验证，未部署。
+
+2026-11-16 来源标签精简：人工/历史缺省来源不显示标签，AI 改为蓝紫渐变短标签；样式预览完成，已移除临时前端示例。
+
+2026-11-16 Skill 增改查：拆分 create.py/update.py/query.py 与按需参考；创建返回 entryId/version，修改按 ID 查询并合并指定字段。服务端 GET 单条与 PATCH 接受账本 Key，强制仅 AI 来源、有效修改人和版本校验；修改/创建共用账本幂等范围，保留旧创建哈希，禁止密钥删除和人工账单修改，无新增迁移。
 
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md

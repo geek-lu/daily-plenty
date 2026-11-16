@@ -1,8 +1,10 @@
 'use client';
 /** [INPUT]: common/together runtime、会话、Presence、桌面安装入口与 pc/shell 版式原子。
- * [OUTPUT]: PC 我们页整屏两栏：左栏成员与邀请，右栏账号与安装入口；内容超高时各自卡内滚动。
+ * [OUTPUT]: PC 我们页整屏两栏：左栏成员与邀请，右栏账号、API 密钥设置与安装入口；内容超高时各自卡内滚动。
  * [POS]: pc/together 桌面视图；邀请/复制/退出逻辑与手机版共用。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
+import Link from 'next/link';
+import { InterfaceIcon } from '@/features/common/ui/InterfaceIcon';
 import { useSession } from '@/features/common/session/runtime';
 import { useTogether } from '@/features/common/together/runtime';
 import '@/features/common/together/avatar.css';
@@ -146,6 +148,16 @@ function TogetherContent() {
                 </dd>
               </div>
             </dl>
+            <Link
+              className="btn mt-5 w-full justify-between"
+              href={`/together/api-keys?${new URLSearchParams({ ledger: state.ledgerId })}`}
+            >
+              <span>API 密钥 · 连接 AI 助手</span>
+              <InterfaceIcon
+                name="arrow"
+                size={16}
+              />
+            </Link>
             <button
               className="btn mt-5 w-full"
               onClick={state.logout}
