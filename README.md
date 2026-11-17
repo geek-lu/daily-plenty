@@ -35,11 +35,11 @@
 
 | 明细与筛选                               | 统计                                     |
 | ---------------------------------------- | ---------------------------------------- |
-| ![明细](docs/screenshots/pc-records.png) | ![统计](docs/screenshots/pc-reports.png) |
+| ![明细](./docs/screenshots/pc-records.png) | ![统计](./docs/screenshots/pc-reports.png) |
 
 | 记一笔                                | 账单评论                               |
 | ------------------------------------- | -------------------------------------- |
-| ![记一笔](docs/screenshots/entry.png) | ![评论](docs/screenshots/comments.png) |
+| ![记一笔](./docs/screenshots/entry.png) | ![我们](./docs/screenshots/together.png) |
 
 ## 特性
 
