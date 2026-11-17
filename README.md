@@ -27,7 +27,7 @@
 
 | 账本                                 | 统计                                    | 明细                                    | 我们                                     |
 | ------------------------------------ | --------------------------------------- | --------------------------------------- | ---------------------------------------- |
-| ![账本](docs/screenshots/m-home.png) | ![统计](docs/screenshots/m-reports.png) | ![明细](docs/screenshots/m-records.png) | ![我们](docs/screenshots/m-together.png) |
+| ![账本](./docs/screenshots/m-home.png) | ![统计](./docs/screenshots/m-reports.png) | ![明细](./docs/screenshots/m-records.png) | ![我们](./docs/screenshots/m-together.png) | ![记账](./docs/screenshots/m-add.png) |
 
 **桌面端**
 
