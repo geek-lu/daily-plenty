@@ -80,7 +80,7 @@ pnpm dev
 可选：`pnpm configure` 生成 `.env.local`（数据库路径等），只补缺项，不覆盖已有配置。
 
 ## AI 自然语言记账
-![work-buddy demo](./docs/screenshots/workbuddy-add.png)
+<img src="./docs/screenshots/workbuddy-add.png" alt="workbuddy demo" style="display: block; max-width: 360px; width: 100%; height: auto;" />
 
 仓库提供 [daily-plenty-bookkeeping 技能](skills/daily-plenty-bookkeeping/SKILL.md)，使用现有 HTTP API，适合接入 Work Buddy 等支持 `SKILL.md` 且具备 Python 3.9+ 命令执行与网络能力的 agent。
 
